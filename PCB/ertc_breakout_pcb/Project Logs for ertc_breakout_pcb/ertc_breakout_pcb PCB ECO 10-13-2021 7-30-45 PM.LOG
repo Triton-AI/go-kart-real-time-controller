@@ -1,0 +1,20 @@
+Added Component: Designator=J?(SAMTEC_SSW-135-01-T-D)
+Add component (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Samtec"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "SSW-135-01-T-D"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=J?(SAMTEC_SSW-135-01-T-D)
+Add component (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Samtec"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "SSW-135-01-T-D"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Member To Class: ClassName=connectors Member=Component J? SSW-135-01-T-D
+Added Member To Class: ClassName=connectors Member=Component J? SSW-135-01-T-D
+Added Member To Class: ClassName=connectors Member=Component J? A-DF_09_A/KG-T2S
+Added Member To Class: ClassName=connectors Member=Component J? A-DF_09_A/KG-T2S
+Added Member To Class: ClassName=connectors Member=Component J? A-DF_09_A/KG-T2S
+Added Room: Name=connectors
