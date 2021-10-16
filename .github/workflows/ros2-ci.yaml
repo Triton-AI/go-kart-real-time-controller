@@ -1,16 +1,7 @@
 name: ROS2 CI Workflow
 
-on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - haoru/dev
-      - ros2
-
+on: [push]
 jobs:
-
   build-ros2:
     runs-on: ubuntu-latest
     container:
