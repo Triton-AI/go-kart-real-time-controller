@@ -3,10 +3,10 @@ name: ROS2 CI Workflow
 on:
   pull_request:
     branches:
-      - ros2
+      - main
   push:
     branches:
-      - ros2
+      - haoru/dev
 
 jobs:
 
