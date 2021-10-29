@@ -4,7 +4,7 @@
 
 The transfer of messages through network interfaces of the team's choice (Serial, CAN, Ethernet) follows a standardized packet API for message serialization (encoding) and deserialization (decoding).
 
-The low-level network interface (LLNI) of Serial, CAN and Ethernet is agnostic about what is being transferred. On top of that, the high-level network interface (HLNI), which is mainly the packet factory, is responsible for encoding and decoding between C++ class representation of message and low-level buffer to/from LLNI.
+The low-level communication interface (LLCI) of Serial, CAN and Ethernet is agnostic about what is being transferred. On top of that, the high-level communication interface (HLCI), which is mainly the packet factory, is responsible for encoding and decoding between C++ class representation of message and low-level buffer to/from LLCI.
 
 ![Communication Architecture](comm_architecture.png)
 
@@ -16,14 +16,65 @@ Each packet is a variable buffer of bytes.
 
 The Packet API takes substantial reference from VESC packet API.
 
-A standard packet begins with byte 0x02, followed by 1 byte of payload length. Payload cannot exceed 256 bytes. After that, 2 bytes are used for payload checksum, and finnaly there is one termination byte 0x03.
+A standard packet begins with byte 0x02, followed by 1 byte of payload length. Payload cannot exceed 256 bytes. After that, 2 bytes are used for payload checksum, and finally there is one termination byte 0x03.
 
-Extended packet is not needed and not implemented for the moment, but any LLNI implementation should not rule out the possibility of such possibilities in the future.
+The first byte (FB) of each payload type is uniquely identifiable.
+
+Extended packet is not needed and not implemented at the moment, but any LLCI implementation should not rule out the possibility of such packet in the future.
+
+To avoid garbage data, unused payload buffer section should be initiated to 0x00. 0x00 cannot have any substaintial meaning in the playload other than data.
 
 ## Base Payloads
 
 These messages concerns the basic communication and device control, such as communication establishment, firmware version, MCU reset, heartbeat, and watchdog.
 
+### Handshake \#1
+
+Payload size: 5 Byte
+
+FB: 0x04
+
+The first handshake is initiated by the PC. The first byte of the payload is 0x04, followed by a 4-byte randomly generated unsigned integer as the sequence number.
+
+### Handshake \#2
+
+Payload size: 5 Byte
+
+FB: 0x05
+
+The second handshake given by the MCU after hearing handshake #1 from the PC. The first byte of the payload is 0x05, followed by a 4-byte unsigned integer which is the bit-wise complement of the number in handshake #1.
+
+### Request Firmware Version
+
+Payload size: 1 Byte
+
+FB: 0x06
+
+The PC requesting firmware version from the MCU.
+
+### Respond Firmware Version
+
+Payload size: 4 Byte
+
+FB: 0x07
+
+The MCU's response of firmware version in three `uint8`: version x.y.z
+
+### Reset MCU
+
+Payload size: 5 Byte
+
+FB: 0x255
+
+The PC commanding a MCU reset. the four bytes of the message contains alternating 1s and 0s (decimal 2863311530 or hex AAAAAAAA).
+
+### Heartbeat
+
+Payload size: 2 Byte
+
+FB: 0x252
+
+Bidirectional message with a `uint8` rolling counter that increments or overflows with every message sent to the other side.
 
 ## Configuration Payloads
 
@@ -36,3 +87,12 @@ These messages commands the GKC to actuate its motors and servos.
 ## Feedback Payloads
 
 These messages request or send GKC state, and sensor feedbacks.
+
+| Description              | Payload size (Byte) | First Byte of Payload | Data Structure           | Sender |
+|--------------------------|---------------------|-----------------------|--------------------------|--------|
+| Handshake #1             | 5                   | 0x04                  | uint32 sequence number.  | PC     |
+| Handshake #2             | 5                   | 0x05                  | uint32 sequence number   | MCU    |
+| Request Firmware Version | 1                   | 0x06                  |                          | PC     |
+| Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number | MCU    |
+| Reset MCU                | 5                   | 0x255                 | uint32 magic number      | PC     |
+| Heartbeat                | 2                   | 0x252                 | uint8 rolling counter    | Both   |
