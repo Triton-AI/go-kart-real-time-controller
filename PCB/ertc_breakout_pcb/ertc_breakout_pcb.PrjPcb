@@ -108,25 +108,21 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=WCWYOJNW
 
-[GeneratedDocument1]
-DocumentPath=Project Outputs for ertc_breakout_pcb\Design Rule Check - ertc_breakout_pcb.html
-DItemRevisionGUID=
-
 [Parameter1]
 Name=EngineerName
 Value=Ryan Tran, Roger Kim
 
 [Parameter2]
-Name=SCH_SCALE
-Value=1:1
+Name=PartNumber
+Value=N/A
 
 [Parameter3]
 Name=Rev
 Value=1.0
 
 [Parameter4]
-Name=PartNumber
-Value=N/A
+Name=SCH_SCALE
+Value=1:1
 
 [Configuration1]
 Name=Sources
@@ -247,7 +243,7 @@ OutputDefault20=0
 [OutputGroup2]
 Name=Simulator Outputs
 Description=
-TargetPrinter=Brother HL-2280DW Printer
+TargetPrinter=Microsoft Print to PDF
 PrinterOptions=Record=PrinterOptions|Copies=1|Duplex=1|TrueTypeOptions=3|Collate=1|PrintJobKind=1|PrintWhat=1
 
 [OutputGroup3]
