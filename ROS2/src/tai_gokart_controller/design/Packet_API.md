@@ -64,7 +64,7 @@ The MCU's response of firmware version in three `uint8`: version x.y.z
 
 Payload size: 5 Byte
 
-FB: 0x255
+FB: 0xFF
 
 The PC commanding a MCU reset. the four bytes of the message contains alternating 1s and 0s (decimal 2863311530 or hex AAAAAAAA).
 
@@ -72,7 +72,7 @@ The PC commanding a MCU reset. the four bytes of the message contains alternatin
 
 Payload size: 2 Byte
 
-FB: 0x252
+FB: 0xAA
 
 Bidirectional message with a `uint8` rolling counter that increments or overflows with every message sent to the other side.
 
@@ -94,5 +94,5 @@ These messages request or send GKC state, and sensor feedbacks.
 | Handshake #2             | 5                   | 0x05                  | uint32 sequence number   | MCU    |
 | Request Firmware Version | 1                   | 0x06                  |                          | PC     |
 | Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number | MCU    |
-| Reset MCU                | 5                   | 0x255                 | uint32 magic number      | PC     |
-| Heartbeat                | 2                   | 0x252                 | uint8 rolling counter    | Both   |
+| Reset MCU                | 5                   | 0xFF                  | uint32 magic number      | PC     |
+| Heartbeat                | 2                   | 0xAA                  | uint8 rolling counter    | Both   |
