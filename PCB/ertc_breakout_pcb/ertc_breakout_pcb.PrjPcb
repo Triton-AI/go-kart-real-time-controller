@@ -108,6 +108,10 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=WCWYOJNW
 
+[GeneratedDocument1]
+DocumentPath=Project Outputs for ertc_breakout_pcb\Design Rule Check - ertc_breakout_pcb.html
+DItemRevisionGUID=
+
 [Parameter1]
 Name=EngineerName
 Value=Ryan Tran, Roger Kim
