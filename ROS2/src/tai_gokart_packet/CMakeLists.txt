@@ -18,6 +18,7 @@ set(GKC_PACKET_LIB_SRC
 set(GKC_PACKET_LIB_HEADERS
   include/tai_gokart_packet/gkc_packet_factory.hpp
   include/tai_gokart_packet/gkc_packets.hpp
+  include/tai_gokart_packet/gkc_packet_subscriber.hpp
 )
 
 # generate library

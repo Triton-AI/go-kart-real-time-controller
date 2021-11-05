@@ -26,7 +26,7 @@ namespace gkc
 class GkcPacketFactory
 {
 public:
-  GkcPacketFactory(void(*debug)(std::string), GkcPacketSubscriber * sub);
+  GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::string));
 
   void Receive(const GkcBuffer & buffer);
   std::shared_ptr<GkcBuffer> Send(const GkcPacket::SharedPtr & packet);

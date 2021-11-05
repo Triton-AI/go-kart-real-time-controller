@@ -17,7 +17,7 @@ namespace tritonai
 {
 namespace gkc
 {
-GkcPacketFactory::GkcPacketFactory(void(*debug)(std::string), GkcPacketSubscriber * sub)
+GkcPacketFactory::GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::string))
 {
   this->_debug = debug;
   this->_sub = sub;

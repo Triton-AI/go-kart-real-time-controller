@@ -17,33 +17,14 @@
 #include <memory>
 #include <vector>
 
+#include "tai_gokart_packet/gkc_packet_subscriber.hpp"
+
 namespace tritonai
 {
 namespace gkc
 {
 
 using GkcBuffer = std::vector<uint8_t>;
-
-class Handshake1GkcPacket;
-class Handshake2GkcPacket;
-class GetFirmwareVersionGkcPacket;
-class FirmwareVersionGkcPacket;
-class ResetMcuGkcPacket;
-class HeartbeatGkcPacket;
-/**
- * @brief Subclass this to receive GkcPackets from GkcPacketFactory
- *
- */
-class GkcPacketSubscriber
-{
-public:
-  virtual void packet_callback(const Handshake1GkcPacket & packet) = 0;
-  virtual void packet_callback(const Handshake2GkcPacket & packet) = 0;
-  virtual void packet_callback(const GetFirmwareVersionGkcPacket & packet) = 0;
-  virtual void packet_callback(const FirmwareVersionGkcPacket & packet) = 0;
-  virtual void packet_callback(const ResetMcuGkcPacket & packet) = 0;
-  virtual void packet_callback(const HeartbeatGkcPacket & packet) = 0;
-};
 class RawGkcPacket
 {
 public:
@@ -157,6 +138,7 @@ public:
    */
   static uint16_t calc_crc16(const GkcBuffer & payload);
   static int64_t get_timestamp();
+  static void debug_cout(std::string str);
 
   template<typename T>
   static GkcPacket::SharedPtr CreatePacket()

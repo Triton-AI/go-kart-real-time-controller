@@ -98,6 +98,11 @@ uint16_t GkcPacketUtils::calc_crc16(const GkcBuffer & payload)
   return checksum;
 }
 
+void GkcPacketUtils::debug_cout(std::string str)
+{
+  std::cout << str << std::endl;
+}
+
 /*
 Handshake 1
 */
