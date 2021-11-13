@@ -80,19 +80,71 @@ Bidirectional message with a `uint8` rolling counter that increments or overflow
 
 These messages set or get the configurations of the controller.
 
+### Configuation
+
+Payload size: 49 Byte
+
+FB: 0xA0
+
+The PC sends configuations to the MCU, containing actuation calibrations and watchdog timeout intervals.
+
 ## Control Payloads
 
-These messages commands the GKC to actuate its motors and servos.
+### Control
+
+Payload size: 13 Byte
+
+FB: 0xAB
+
+The PC commands steering, throttle, and brake to the MCU.
+
+### State Transition
+
+Payload size: 2 Byte
+
+FB: 0xA1
+
+The PC requests a state transition on the MCU. Possible states include unintialized, initialized, active, paused, and emergency stop.
+
+### Shutdown \#1
+
+Payload size: 5 Byte
+
+FB: 0xA2
+
+The PC requests a shutdown to the MCU. The message contains a sequence number.
+
+### Shutdown \#2
+
+Payload size: 5 Byte
+
+FB: 0xA3
+
+The MCU responds to the shutdown command from the computer by adding one to the incoming sequence number in Shutdown #1.
 
 ## Feedback Payloads
 
+### Sensors
+
+Payload size: 22 Byte
+
+FB: 0xAC
+
+The MCU sends sensor data to the PC, containing wheel speeds, pressures, voltage, etc.
+
 These messages request or send GKC state, and sensor feedbacks.
 
-| Description              | Payload size (Byte) | First Byte of Payload | Data Structure           | Sender |
-|--------------------------|---------------------|-----------------------|--------------------------|--------|
-| Handshake #1             | 5                   | 0x04                  | uint32 sequence number.  | PC     |
-| Handshake #2             | 5                   | 0x05                  | uint32 sequence number   | MCU    |
-| Request Firmware Version | 1                   | 0x06                  |                          | PC     |
-| Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number | MCU    |
-| Reset MCU                | 5                   | 0xFF                  | uint32 magic number      | PC     |
-| Heartbeat                | 2                   | 0xAA                  | uint8 rolling counter    | Both   |
+| Description              | Payload size (Byte) | First Byte of Payload | Data Structure                                        | Sender |
+|--------------------------|---------------------|-----------------------|-------------------------------------------------------|--------|
+| Handshake #1             | 5                   | 0x04                  | uint32 sequence number.                               | PC     |
+| Handshake #2             | 5                   | 0x05                  | uint32 sequence number                                | MCU    |
+| Request Firmware Version | 1                   | 0x06                  |                                                       | PC     |
+| Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number                              | MCU    |
+| Reset MCU                | 5                   | 0xFF                  | uint32 magic number                                   | PC     |
+| Heartbeat                | 2                   | 0xAA                  | uint8 rolling counter                                 | Both   |
+| Configuation             | 49                  | 0xA0                  | actuation calibrations and watchdog timeout intervals | PC     |
+| Control                  | 13                  | 0xAB                  | integer steering, throttle, and brake                 | PC     |
+| State Transition         | 2                   | 0xA1                  | uint8 state number                                    | PC     |
+| Sensors                  | 22                  | 0xAC                  | sensor readings                                       | MCU    |
+| Shutdown \#1             | 5                   | 0xA2                  | uint32 sequence number.                               | PC     |
+| Shutdown \#2             | 5                   | 0xA3                  | uint32 sequence number.                               | MCU    |

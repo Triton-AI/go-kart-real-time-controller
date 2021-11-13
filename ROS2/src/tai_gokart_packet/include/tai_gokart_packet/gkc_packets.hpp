@@ -126,6 +126,88 @@ public:
   void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
 };
 
+class ConfigGkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xA0;
+  int32_t max_steering_left;
+  int32_t max_steering_right;
+  int32_t neutral_steering;
+
+  int32_t max_throttle;
+  int32_t min_throttle;
+  int32_t zero_throttle;
+
+  int32_t max_brake;
+  int32_t min_brake;
+  int32_t zero_brake;
+
+  uint32_t control_timeout_ms;
+  uint32_t comm_timeout_ms;
+  uint32_t sensor_timeout_ms;
+
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
+class StateTransitionGkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xA1;
+  uint8_t requested_state = 0;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
+class ControlGkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xAB;
+  int32_t throttle;
+  int32_t steering;
+  int32_t brake;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
+class SensorGkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xAC;
+  float wheel_speed_1;
+  float wheel_speed_2;
+  float voltage;
+  float brake_pressure;
+  float steering_angle_rad;
+  uint8_t state;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
+class Shutdown1GkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xA2;
+  uint32_t sequence_number;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
+class Shutdown2GkcPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xA3;
+  uint32_t sequence_number;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+};
+
 class GkcPacketUtils
 {
 public:
