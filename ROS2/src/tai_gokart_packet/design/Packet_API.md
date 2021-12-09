@@ -142,7 +142,7 @@ These messages request or send GKC state, and sensor feedbacks.
 | Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number                              | MCU    |
 | Reset MCU                | 5                   | 0xFF                  | uint32 magic number                                   | PC     |
 | Heartbeat                | 2                   | 0xAA                  | uint8 rolling counter                                 | Both   |
-| Configuation             | 49                  | 0xA0                  | actuation calibrations and watchdog timeout intervals | PC     |
+| Configuration            | 49                  | 0xA0                  | actuation calibrations and watchdog timeout intervals | PC     |
 | Control                  | 13                  | 0xAB                  | integer steering, throttle, and brake                 | PC     |
 | State Transition         | 2                   | 0xA1                  | uint8 state number                                    | PC     |
 | Sensors                  | 22                  | 0xAC                  | sensor readings                                       | MCU    |
