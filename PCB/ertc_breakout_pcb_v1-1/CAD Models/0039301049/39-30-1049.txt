@@ -1,0 +1,13 @@
+﻿"Symbol";"Value";"Unit";
+"TraceParts.PartNumber";"90-06062020-062620";"";
+"REFERENCE";"39-30-1049";"";
+"TraceParts.PartTitle";"Mini-Fit Jr. Header Vertical PCB Lock 4w";"";
+"TraceParts.InstanceId";"90-06062020-0626202N3XX9WWY2MK673V115V3T3RA";"";
+"DESIGN";"Mini-Fit Jr. Header Vertical PCB Lock 4w";"";
+"TraceParts.PartStatus";"Published";"";
+"TraceParts.PartStatusId";"";"";
+"SUPPLIER";"Molex";"";
+"TraceParts.PartVersion";"1.0.0";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.ClassPath";"MOLEX:90-06062020-062620";"";
