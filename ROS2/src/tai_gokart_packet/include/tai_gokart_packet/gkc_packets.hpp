@@ -240,7 +240,7 @@ public:
 class LogPacket : public GkcPacket
 {
 public:
-  static constexpr uint8_t FIRST_BYTE = 0xA3;
+  static constexpr uint8_t FIRST_BYTE = 0xAD;
   enum Severity
   {
     INFO = 0,
