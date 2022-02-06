@@ -31,8 +31,8 @@ using GkcBuffer = std::vector<uint8_t>;
 class RawGkcPacket
 {
 public:
-  static const uint8_t START_BYTE = 0x02;
-  static const uint8_t END_BYTE = 0x03;
+  static constexpr uint8_t START_BYTE = 0x02;
+  static constexpr uint8_t END_BYTE = 0x03;
 
   RawGkcPacket();
 
@@ -71,7 +71,7 @@ public:
 class Handshake1GkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0x4;
+  static constexpr uint8_t FIRST_BYTE = 0x4;
   uint32_t seq_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -81,7 +81,7 @@ public:
 class Handshake2GkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0x5;
+  static constexpr uint8_t FIRST_BYTE = 0x5;
   uint32_t seq_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -91,7 +91,7 @@ public:
 class GetFirmwareVersionGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0x6;
+  static constexpr uint8_t FIRST_BYTE = 0x6;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
   void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
@@ -100,7 +100,7 @@ public:
 class FirmwareVersionGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0x7;
+  static constexpr uint8_t FIRST_BYTE = 0x7;
   uint8_t major = 0;
   uint8_t minor = 0;
   uint8_t patch = 0;
@@ -112,7 +112,7 @@ public:
 class ResetMcuGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xFF;
+  static constexpr uint8_t FIRST_BYTE = 0xFF;
   uint32_t magic_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -122,8 +122,9 @@ public:
 class HeartbeatGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xAA;
+  static constexpr uint8_t FIRST_BYTE = 0xAA;
   uint8_t rolling_counter = 0;
+  uint8_t state = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
   void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
@@ -132,7 +133,7 @@ public:
 class ConfigGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xA0;
+  static constexpr uint8_t FIRST_BYTE = 0xA0;
   struct __attribute__((packed)) Configurables
   {
     // steering config (refers to average front wheel angle in radian)
@@ -164,7 +165,7 @@ public:
 class StateTransitionGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xA1;
+  static constexpr uint8_t FIRST_BYTE = 0xA1;
   uint8_t requested_state = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -174,7 +175,7 @@ public:
 class ControlGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xAB;
+  static constexpr uint8_t FIRST_BYTE = 0xAB;
   float throttle;  // paddle percentage out of 1.0
   float steering;  // average front wheel angle in radian
   float brake;  // target brake pressure in psi
@@ -186,7 +187,7 @@ public:
 class SensorGkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xAC;
+  static constexpr uint8_t FIRST_BYTE = 0xAC;
   struct __attribute__((packed)) SensorValues
   {
     float wheel_speed_fl;  // wheel speeds in rpm
@@ -219,7 +220,7 @@ public:
 class Shutdown1GkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xA2;
+  static constexpr uint8_t FIRST_BYTE = 0xA2;
   uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -229,7 +230,7 @@ public:
 class Shutdown2GkcPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xA3;
+  static constexpr uint8_t FIRST_BYTE = 0xA3;
   uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -239,7 +240,7 @@ public:
 class LogPacket : public GkcPacket
 {
 public:
-  static const uint8_t FIRST_BYTE = 0xA3;
+  static constexpr uint8_t FIRST_BYTE = 0xA3;
   enum Severity
   {
     INFO = 0,
