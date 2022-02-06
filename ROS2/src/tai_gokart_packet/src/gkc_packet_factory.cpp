@@ -12,7 +12,8 @@
 #include "tai_gokart_packet/gkc_packet_factory.hpp"
 #include <cassert>
 #include <memory>
-
+#include <string>
+#include <algorithm>
 namespace tritonai
 {
 namespace gkc
@@ -25,54 +26,82 @@ GkcPacketFactory::GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::
 
 void GkcPacketFactory::Receive(const GkcBuffer & buffer)
 {
-  const static int MIN_PACKET_SIZE = 7;
+  static constexpr int MIN_PACKET_SIZE = 6;
+  static constexpr int MIN_PAYLOAD_SIZE = 1;
+  static constexpr int NUM_NON_PAYLOAD_BYTE = 5;
+  static constexpr int NUM_BYTE_BEFORE_PAYLOAD = 2;
   static int start_idx = 0;
 
   _buffer.reserve(_buffer.size() + buffer.size());
-  std::copy(buffer.begin(), buffer.end(), _buffer.end());
+  _buffer.insert(_buffer.end(), buffer.begin(), buffer.end());
 
   // Look for the start byte
-  for (const auto & byte : _buffer) {
+look_for_next_start: for (const auto & byte : _buffer) {
     if (byte == RawGkcPacket::START_BYTE) {
       break;
     }
     ++start_idx;
   }
 
-  try {
-    if (_buffer.size() - start_idx >= MIN_PACKET_SIZE) {
-      uint16_t payload_size =
-        *reinterpret_cast<uint16_t *>(&_buffer[start_idx + 1]);
-      // Check packet completeness
-      if ((_buffer[start_idx + 6 + payload_size] != RawGkcPacket::END_BYTE) |
-        (payload_size < 1))
-      {
-        throw 42;
-      }
+  if (_buffer.size() <= static_cast<uint32_t>(start_idx + 1)) {
+    // No packet start found. erase buffer.
+    _buffer = GkcBuffer();
+    start_idx = 0;
+    return;
+  }
 
-      const GkcBuffer payload =
-        GkcBuffer(
-        _buffer.begin() + start_idx + 3,
-        _buffer.begin() + start_idx + 3 + payload_size - 1);
-      uint16_t checksum =
-        *reinterpret_cast<uint16_t *>(&_buffer[start_idx + 3 + payload_size]);
-
-      //Check checksum
-      if (GkcPacketUtils::calc_crc16(payload) != checksum) {
-        throw 42;
-      }
-
-      auto raw_packet = RawGkcPacket(payload);
-
-      uint8_t fb = _buffer[start_idx + 3];
-      auto packet = fb_lookup.find(fb)->second();
-      packet->decode(raw_packet);
-      packet->publish(*(this->_sub));
-
-      start_idx = 0;
-      _buffer.erase(_buffer.begin(), _buffer.begin() + 6 + payload_size);
+  // Are there enough bytes to form a packet?
+  if (_buffer.size() - start_idx >= MIN_PACKET_SIZE) {
+    uint8_t payload_size = _buffer[start_idx + 1];
+    if (static_cast<uint32_t>(start_idx + payload_size + NUM_NON_PAYLOAD_BYTE) > _buffer.size()) {
+      // Need more bytes to complete a packet. Wait for the next receive.
+      return;
     }
-  } catch (...) {
+    // Check packet completeness
+    if ((_buffer[start_idx + NUM_NON_PAYLOAD_BYTE + payload_size - 1] != RawGkcPacket::END_BYTE) ||
+      (payload_size < MIN_PAYLOAD_SIZE))
+    {
+      _debug("Packet malformed. Potentially out-of-sync.");
+      _buffer.erase(_buffer.begin(), _buffer.begin() + start_idx + 1);
+      start_idx = 0;
+      goto look_for_next_start;
+    }
+
+    // Find payload and checksum
+    const GkcBuffer payload =
+      GkcBuffer(
+      _buffer.begin() + start_idx + NUM_BYTE_BEFORE_PAYLOAD,
+      _buffer.begin() + start_idx + NUM_BYTE_BEFORE_PAYLOAD + payload_size);
+    uint16_t checksum =
+      *reinterpret_cast<uint16_t *>(&_buffer[start_idx + NUM_BYTE_BEFORE_PAYLOAD + payload_size]);
+
+    // Check checksum
+    if (GkcPacketUtils::calc_crc16(payload) != checksum) {
+      _debug("Possible packet corruption. Dropping packet.");
+      _buffer.erase(
+        _buffer.begin(),
+        _buffer.begin() + start_idx + NUM_NON_PAYLOAD_BYTE + payload_size);
+      start_idx = 0;
+      goto look_for_next_start;
+    }
+
+    auto raw_packet = RawGkcPacket(payload);
+    uint8_t fb = payload[0];
+    auto packet = fb_lookup.find(fb)->second();
+    packet->decode(raw_packet);
+    packet->publish(*(this->_sub));
+
+    // One packet found. Are there others?
+    // First erase the parsed packet from buffer
+    start_idx = 0;
+    _buffer.erase(
+      _buffer.begin(),
+      _buffer.begin() + start_idx + NUM_NON_PAYLOAD_BYTE + payload_size);
+    // Then go to look for the next packet
+    goto look_for_next_start;
+  } else {
+    // Need more bytes to complete a packet. Wait for the next receive.
+    return;
   }
 }
 
