@@ -14,8 +14,10 @@
 
 #include <cstdint>
 
-namespace tritonai {
-namespace gkc {
+namespace tritonai
+{
+namespace gkc
+{
 const uint8_t MAJOR = 0;
 const uint8_t MINOR = 1;
 const uint8_t PATCH = 0;

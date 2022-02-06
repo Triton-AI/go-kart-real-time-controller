@@ -12,7 +12,8 @@
 #include "tai_gokart_packet/gkc_packet_factory.hpp"
 #include <cassert>
 #include <memory>
-
+#include <string>
+#include <algorithm>
 namespace tritonai
 {
 namespace gkc
@@ -25,7 +26,7 @@ GkcPacketFactory::GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::
 
 void GkcPacketFactory::Receive(const GkcBuffer & buffer)
 {
-  const static int MIN_PACKET_SIZE = 7;
+  static const int MIN_PACKET_SIZE = 7;
   static int start_idx = 0;
 
   _buffer.reserve(_buffer.size() + buffer.size());
@@ -57,7 +58,7 @@ void GkcPacketFactory::Receive(const GkcBuffer & buffer)
       uint16_t checksum =
         *reinterpret_cast<uint16_t *>(&_buffer[start_idx + 3 + payload_size]);
 
-      //Check checksum
+      // Check checksum
       if (GkcPacketUtils::calc_crc16(payload) != checksum) {
         throw 42;
       }

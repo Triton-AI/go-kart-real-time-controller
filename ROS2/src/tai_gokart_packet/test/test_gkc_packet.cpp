@@ -13,4 +13,6 @@
 
 #include "tai_gokart_packet/gkc_packet_factory.hpp"
 
-TEST(TestGkcPacket, GkcPacketCreations) { EXPECT_EQ(1, 1); }
+TEST(TestGkcPacket, GkcPacketCreations) {
+  EXPECT_EQ(1, 1);
+}

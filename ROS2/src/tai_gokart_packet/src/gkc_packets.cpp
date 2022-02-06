@@ -12,6 +12,7 @@
 #include <chrono>
 #include <algorithm>
 #include <memory>
+#include <string>
 namespace tritonai
 {
 namespace gkc
@@ -42,16 +43,17 @@ RawGkcPacket & RawGkcPacket::operator=(const RawGkcPacket & packet)
 std::shared_ptr<GkcBuffer> RawGkcPacket::encode()
 {
   static constexpr uint8_t NUM_NON_PAYLOAD_BYTES = 5;
-  auto buffer           = std::make_unique<GkcBuffer>(payload_size + NUM_NON_PAYLOAD_BYTES, 0);
-  auto pos_payload_size = GkcPacketUtils::write_to_buffer(buffer->begin(), RawGkcPacket::START_BYTE);
-  auto pos_payload      = GkcPacketUtils::write_to_buffer(pos_payload_size, payload_size);
-  auto pos_checksum     = std::copy(payload.begin(), payload.end(), pos_payload);
-  auto pos_end_byte     = GkcPacketUtils::write_to_buffer(pos_checksum, checksum);
-  auto pos_end          = GkcPacketUtils::write_to_buffer(pos_end_byte, RawGkcPacket::END_BYTE);
-  if (pos_end != buffer->end())
-  {
+  auto buffer = std::make_unique<GkcBuffer>(payload_size + NUM_NON_PAYLOAD_BYTES, 0);
+  auto pos_payload_size =
+    GkcPacketUtils::write_to_buffer(buffer->begin(), RawGkcPacket::START_BYTE);
+  auto pos_payload = GkcPacketUtils::write_to_buffer(pos_payload_size, payload_size);
+  auto pos_checksum = std::copy(payload.begin(), payload.end(), pos_payload);
+  auto pos_end_byte = GkcPacketUtils::write_to_buffer(pos_checksum, checksum);
+  auto pos_end = GkcPacketUtils::write_to_buffer(pos_end_byte, RawGkcPacket::END_BYTE);
+  if (pos_end != buffer->end()) {
     // Sanity check: encoding should use the entire buffer
-    throw std::runtime_error("Error when encoding raw gkc packet. Potential payload size mismatch.");
+    throw std::runtime_error(
+            "Error when encoding raw gkc packet. Potential payload size mismatch.");
   }
   return buffer;
 }
@@ -66,7 +68,7 @@ int64_t GkcPacketUtils::get_timestamp()
 
 uint16_t GkcPacketUtils::calc_crc16(const GkcBuffer & payload)
 {
-  const static uint16_t crc16_tab[] = {
+  static const uint16_t crc16_tab[] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7, 0x8108,
     0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef, 0x1231, 0x0210,
     0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6, 0x9339, 0x8318, 0xb37b,
@@ -155,7 +157,7 @@ RawGkcPacket::SharedPtr GetFirmwareVersionGkcPacket::encode() const
   return std::make_unique<RawGkcPacket>(payload);
 }
 
-void GetFirmwareVersionGkcPacket::decode(const RawGkcPacket & raw) 
+void GetFirmwareVersionGkcPacket::decode(const RawGkcPacket & raw)
 {
   (void)raw;
 }
@@ -258,16 +260,16 @@ RawGkcPacket::SharedPtr ControlGkcPacket::encode() const
   GkcBuffer payload = GkcBuffer(13);
   payload[0] = FIRST_BYTE;
   auto pos_steering = GkcPacketUtils::write_to_buffer(payload.begin() + 1, throttle);
-  auto pos_brake    = GkcPacketUtils::write_to_buffer(pos_steering, steering);
-                      GkcPacketUtils::write_to_buffer(pos_brake, brake);
+  auto pos_brake = GkcPacketUtils::write_to_buffer(pos_steering, steering);
+  GkcPacketUtils::write_to_buffer(pos_brake, brake);
   return std::make_unique<RawGkcPacket>(payload);
 }
 
 void ControlGkcPacket::decode(const RawGkcPacket & raw)
 {
   auto pos_steering = GkcPacketUtils::read_from_buffer(raw.payload.begin() + 1, throttle);
-  auto pos_brake    = GkcPacketUtils::read_from_buffer(pos_steering, steering);
-                      GkcPacketUtils::read_from_buffer(pos_brake, brake);
+  auto pos_brake = GkcPacketUtils::read_from_buffer(pos_steering, steering);
+  GkcPacketUtils::read_from_buffer(pos_brake, brake);
 }
 
 /*
