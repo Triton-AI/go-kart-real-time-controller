@@ -24,7 +24,7 @@ RawGkcPacket::RawGkcPacket()
 RawGkcPacket::RawGkcPacket(const GkcBuffer & payload)
 {
   payload_size = payload.size();
-  this->payload = GkcBuffer(payload_size);
+  this->payload = GkcBuffer(payload_size, 0);
   std::copy(payload.begin(), payload.end(), this->payload.begin());
   checksum = GkcPacketUtils::calc_crc16(payload);
 }
@@ -34,7 +34,7 @@ RawGkcPacket::RawGkcPacket(const RawGkcPacket & packet) {*this = packet;}
 RawGkcPacket & RawGkcPacket::operator=(const RawGkcPacket & packet)
 {
   payload_size = packet.payload_size;
-  payload = GkcBuffer(payload_size);
+  payload = GkcBuffer(payload_size, 0);
   std::copy(packet.payload.begin(), packet.payload.end(), payload.begin());
   checksum = packet.checksum;
   return *this;
@@ -135,7 +135,7 @@ Handshake 1
 */
 RawGkcPacket::SharedPtr Handshake1GkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(5);
+  GkcBuffer payload = GkcBuffer(5, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint32_t>(payload.begin() + 1, seq_number);
   return std::make_unique<RawGkcPacket>(payload);
@@ -153,7 +153,7 @@ Handshake 2
 */
 RawGkcPacket::SharedPtr Handshake2GkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(5);
+  GkcBuffer payload = GkcBuffer(5, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint32_t>(payload.begin() + 1, seq_number);
   return std::make_unique<RawGkcPacket>(payload);
@@ -171,7 +171,7 @@ Get firmware
 */
 RawGkcPacket::SharedPtr GetFirmwareVersionGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(1);
+  GkcBuffer payload = GkcBuffer(1, 0);
   payload[0] = FIRST_BYTE;
   return std::make_unique<RawGkcPacket>(payload);
 }
@@ -186,7 +186,7 @@ Firmware
 */
 RawGkcPacket::SharedPtr FirmwareVersionGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(4);
+  GkcBuffer payload = GkcBuffer(4, 0);
   payload[0] = FIRST_BYTE;
   payload[1] = major;
   payload[2] = minor;
@@ -206,7 +206,7 @@ Reset IMU
 */
 RawGkcPacket::SharedPtr ResetMcuGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(5);
+  GkcBuffer payload = GkcBuffer(5, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint32_t>(payload.begin() + 1, magic_number);
   return std::make_unique<RawGkcPacket>(payload);
@@ -224,7 +224,7 @@ Heartbeat
 */
 RawGkcPacket::SharedPtr HeartbeatGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(2);
+  GkcBuffer payload = GkcBuffer(2, 0);
   payload[0] = FIRST_BYTE;
   payload[1] = rolling_counter;
   return std::make_unique<RawGkcPacket>(payload);
@@ -240,7 +240,7 @@ Config
 */
 RawGkcPacket::SharedPtr ConfigGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(sizeof(Configurables) + 1);
+  GkcBuffer payload = GkcBuffer(sizeof(Configurables) + 1, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer(payload.begin() + 1, values);
   return std::make_unique<RawGkcPacket>(payload);
@@ -258,7 +258,7 @@ State Transition
 */
 RawGkcPacket::SharedPtr StateTransitionGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(2);
+  GkcBuffer payload = GkcBuffer(2, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer(payload.begin() + 1, requested_state);
   return std::make_unique<RawGkcPacket>(payload);
@@ -276,7 +276,7 @@ Control
 */
 RawGkcPacket::SharedPtr ControlGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(13);
+  GkcBuffer payload = GkcBuffer(13, 0);
   payload[0] = FIRST_BYTE;
   auto pos_steering = GkcPacketUtils::write_to_buffer(payload.begin() + 1, throttle);
   auto pos_brake = GkcPacketUtils::write_to_buffer(pos_steering, steering);
@@ -296,7 +296,7 @@ Sensors
 */
 RawGkcPacket::SharedPtr SensorGkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(sizeof(SensorValues) + 1);
+  GkcBuffer payload = GkcBuffer(sizeof(SensorValues) + 1, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer(payload.begin() + 1, values);
   return std::make_unique<RawGkcPacket>(payload);
@@ -314,7 +314,7 @@ Shutdown 1
 */
 RawGkcPacket::SharedPtr Shutdown1GkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(5);
+  GkcBuffer payload = GkcBuffer(5, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint32_t>(payload.begin() + 1, seq_number);
   return std::make_unique<RawGkcPacket>(payload);
@@ -332,7 +332,7 @@ Shutdown 2
 */
 RawGkcPacket::SharedPtr Shutdown2GkcPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(5);
+  GkcBuffer payload = GkcBuffer(5, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint32_t>(payload.begin() + 1, seq_number);
   return std::make_unique<RawGkcPacket>(payload);
@@ -350,7 +350,7 @@ Log
 */
 RawGkcPacket::SharedPtr LogPacket::encode() const
 {
-  GkcBuffer payload = GkcBuffer(what.size() + 1 + 1);
+  GkcBuffer payload = GkcBuffer(what.size() + 1 + 1, 0);
   payload[0] = FIRST_BYTE;
   GkcPacketUtils::write_to_buffer<uint8_t>(payload.begin() + 1, static_cast<uint8_t>(level));
   std::copy(what.begin(), what.end(), payload.begin() + 2);
