@@ -1,15 +1,17 @@
 /**
  * @file gkc_packet_subscriber.hpp
  * @author Haoru Xue (hxue@ucsd.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-11-04
- * 
+ *
  * @copyright Copyright (c) 2021 [Triton AI]
- * 
+ *
  */
-
-namespace tritonai{
+#ifndef TAI_GOKART_PACKET__GKC_PACKET_SUBSCRIBER_HPP_
+#define TAI_GOKART_PACKET__GKC_PACKET_SUBSCRIBER_HPP_
+namespace tritonai
+{
 namespace gkc
 {
 class Handshake1GkcPacket;
@@ -46,5 +48,7 @@ public:
   virtual void packet_callback(const Shutdown2GkcPacket & packet) = 0;
   virtual void packet_callback(const LogPacket & packet) = 0;
 };
-}
-}
+}  // namespace gkc
+}  // namespace tritonai
+
+#endif  // TAI_GOKART_PACKET__GKC_PACKET_SUBSCRIBER_HPP_

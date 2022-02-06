@@ -16,6 +16,8 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <string>
+#include <algorithm>
 
 #include "tai_gokart_packet/gkc_packet_subscriber.hpp"
 
@@ -28,8 +30,8 @@ using GkcBuffer = std::vector<uint8_t>;
 class RawGkcPacket
 {
 public:
-  const static uint8_t START_BYTE = 0x02;
-  const static uint8_t END_BYTE = 0x03;
+  static const uint8_t START_BYTE = 0x02;
+  static const uint8_t END_BYTE = 0x03;
 
   RawGkcPacket();
 
@@ -68,7 +70,7 @@ public:
 class Handshake1GkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0x4;
+  static const uint8_t FIRST_BYTE = 0x4;
   uint32_t seq_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -78,7 +80,7 @@ public:
 class Handshake2GkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0x5;
+  static const uint8_t FIRST_BYTE = 0x5;
   uint32_t seq_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -88,7 +90,7 @@ public:
 class GetFirmwareVersionGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0x6;
+  static const uint8_t FIRST_BYTE = 0x6;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
   void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
@@ -97,7 +99,7 @@ public:
 class FirmwareVersionGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0x7;
+  static const uint8_t FIRST_BYTE = 0x7;
   uint8_t major = 0;
   uint8_t minor = 0;
   uint8_t patch = 0;
@@ -109,7 +111,7 @@ public:
 class ResetMcuGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xFF;
+  static const uint8_t FIRST_BYTE = 0xFF;
   uint32_t magic_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -119,7 +121,7 @@ public:
 class HeartbeatGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xAA;
+  static const uint8_t FIRST_BYTE = 0xAA;
   uint8_t rolling_counter = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -129,7 +131,7 @@ public:
 class ConfigGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xA0;
+  static const uint8_t FIRST_BYTE = 0xA0;
   struct __attribute__((packed)) Configurables
   {
     // steering config (refers to average front wheel angle in radian)
@@ -146,9 +148,9 @@ public:
     float max_brake;
     float min_brake;
     float zero_brake;  // should be smaller than min
-    
+
     // watchdog timeouts (in millisecond)
-    uint32_t control_timeout_ms;  // timeout for control packets 
+    uint32_t control_timeout_ms;  // timeout for control packets
     uint32_t comm_timeout_ms;  // timeout for heartbeat packets
     uint32_t sensor_timeout_ms;  // timeout between two sensor pollings
   } values;
@@ -161,7 +163,7 @@ public:
 class StateTransitionGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xA1;
+  static const uint8_t FIRST_BYTE = 0xA1;
   uint8_t requested_state = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -171,7 +173,7 @@ public:
 class ControlGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xAB;
+  static const uint8_t FIRST_BYTE = 0xAB;
   float throttle;  // paddle percentage out of 1.0
   float steering;  // average front wheel angle in radian
   float brake;  // target brake pressure in psi
@@ -183,7 +185,7 @@ public:
 class SensorGkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xAC;
+  static const uint8_t FIRST_BYTE = 0xAC;
   struct __attribute__((packed)) SensorValues
   {
     float wheel_speed_fl;  // wheel speeds in rpm
@@ -192,18 +194,18 @@ public:
     float wheel_speed_rr;
 
     float voltage;  // battery voltage in volt
-    float amperage; // battery current draw in amp
+    float amperage;  // battery current draw in amp
 
     float brake_pressure;  // brake pressure in psi
-    float throttle_pos; // throttle paddle position out of 1.0
-    float steering_angle_rad;  // (left +, right -) average wheel angle of the two front wheels in rad
-    float servo_angle_rad; // (left +, right -) servo offset from center in rad
+    float throttle_pos;  // throttle paddle position out of 1.0
+    float steering_angle_rad;  // (left +, right -) average wheel angle of the front wheels in rad
+    float servo_angle_rad;  // (left +, right -) servo offset from center in rad
 
-    bool fault_brake; // fault flag in actuation subsystem
+    bool fault_brake;  // fault flag in actuation subsystem
     bool fault_throttle;
     bool fault_steering;
 
-    bool fault_critical; // fault flag with severity level
+    bool fault_critical;  // fault flag with severity level
     bool fault_error;
     bool fault_warning;
     bool fault_info;
@@ -216,7 +218,7 @@ public:
 class Shutdown1GkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xA2;
+  static const uint8_t FIRST_BYTE = 0xA2;
   uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -226,7 +228,7 @@ public:
 class Shutdown2GkcPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xA3;
+  static const uint8_t FIRST_BYTE = 0xA3;
   uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
@@ -236,7 +238,7 @@ public:
 class LogPacket : public GkcPacket
 {
 public:
-  const static uint8_t FIRST_BYTE = 0xA3;
+  static const uint8_t FIRST_BYTE = 0xA3;
   enum Severity
   {
     INFO = 0,
@@ -275,7 +277,7 @@ public:
 
   /**
    * @brief Write some primitive types or struct to buffer
-   * 
+   *
    * @tparam T the datatype
    * @param where iterator to the start of destination
    * @param to_write value to write
@@ -293,7 +295,7 @@ public:
 
   /**
    * @brief pointer version of `write_to_buffer()`
-   * 
+   *
    * @tparam T the datatype
    * @param where iterator to the start of destination
    * @param to_write value to write
@@ -311,7 +313,7 @@ public:
 
   /**
    * @brief Read content from part of a buffer utilizing `sizeof(T)`
-   * 
+   *
    * @tparam T datatype to be read in
    * @param where where to start reading the content
    * @param to_read where to store the read content
@@ -320,13 +322,14 @@ public:
   template<typename T>
   static GkcBuffer::const_iterator read_from_buffer(GkcBuffer::const_iterator where, T & to_read)
   {
-    to_read = *static_cast<const T *>(static_cast<const void *>(&(*where)));  // TODO (haoru): use reinterpret_cast?
+    // TODO(haoru): reinterpret_cast?
+    to_read = *static_cast<const T *>(static_cast<const void *>(&(*where)));
     return where + sizeof(T);
   }
 
   /**
    * @brief pointer version of `read_from_buffer`
-   * 
+   *
    * @tparam T datatype to be read in
    * @param where where to start reading the content
    * @param to_read where to store the read content
