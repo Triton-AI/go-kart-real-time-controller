@@ -19,6 +19,7 @@ set(GKC_PACKET_LIB_HEADERS
   include/tai_gokart_packet/gkc_packet_factory.hpp
   include/tai_gokart_packet/gkc_packets.hpp
   include/tai_gokart_packet/gkc_packet_subscriber.hpp
+  include/tai_gokart_packet/version.hpp
 )
 
 # generate library
@@ -27,21 +28,15 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   ${GKC_PACKET_LIB_HEADERS}
 )
 
-
+# testing
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-  set(TEST_SOURCES test/test_gkc_packet.cpp)
-  set(TEST_POLYGON_REMOVER_EXE test_gkc_packet)
-  ament_add_gtest(${TEST_POLYGON_REMOVER_EXE} ${TEST_SOURCES})
-  target_link_libraries(${TEST_POLYGON_REMOVER_EXE} ${PROJECT_NAME})
 
+  set(TEST_SOURCES test/test_gkc_packet.cpp)
+  set(TEST_GKC_PACKET_EXE test_gkc_packet)
+  ament_add_gtest(${TEST_GKC_PACKET_EXE} ${TEST_SOURCES})
+  target_link_libraries(${TEST_GKC_PACKET_EXE} ${PROJECT_NAME})
 endif()
 
-ament_package()
+ament_auto_package()
