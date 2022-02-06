@@ -9,12 +9,22 @@
  * 
  */
 
+namespace tritonai{
+namespace gkc
+{
 class Handshake1GkcPacket;
 class Handshake2GkcPacket;
 class GetFirmwareVersionGkcPacket;
 class FirmwareVersionGkcPacket;
 class ResetMcuGkcPacket;
 class HeartbeatGkcPacket;
+class ConfigGkcPacket;
+class StateTransitionGkcPacket;
+class ControlGkcPacket;
+class SensorGkcPacket;
+class Shutdown1GkcPacket;
+class Shutdown2GkcPacket;
+class LogPacket;
 /**
  * @brief Subclass this to receive GkcPackets from GkcPacketFactory
  *
@@ -28,4 +38,13 @@ public:
   virtual void packet_callback(const FirmwareVersionGkcPacket & packet) = 0;
   virtual void packet_callback(const ResetMcuGkcPacket & packet) = 0;
   virtual void packet_callback(const HeartbeatGkcPacket & packet) = 0;
+  virtual void packet_callback(const ConfigGkcPacket & packet) = 0;
+  virtual void packet_callback(const StateTransitionGkcPacket & packet) = 0;
+  virtual void packet_callback(const ControlGkcPacket & packet) = 0;
+  virtual void packet_callback(const SensorGkcPacket & packet) = 0;
+  virtual void packet_callback(const Shutdown1GkcPacket & packet) = 0;
+  virtual void packet_callback(const Shutdown2GkcPacket & packet) = 0;
+  virtual void packet_callback(const LogPacket & packet) = 0;
 };
+}
+}

@@ -82,7 +82,7 @@ public:
   uint32_t seq_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class GetFirmwareVersionGkcPacket : public GkcPacket
@@ -91,7 +91,7 @@ public:
   const static uint8_t FIRST_BYTE = 0x6;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class FirmwareVersionGkcPacket : public GkcPacket
@@ -103,7 +103,7 @@ public:
   uint8_t patch = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class ResetMcuGkcPacket : public GkcPacket
@@ -113,7 +113,7 @@ public:
   uint32_t magic_number = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class HeartbeatGkcPacket : public GkcPacket
@@ -123,32 +123,39 @@ public:
   uint8_t rolling_counter = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class ConfigGkcPacket : public GkcPacket
 {
 public:
   const static uint8_t FIRST_BYTE = 0xA0;
-  int32_t max_steering_left;
-  int32_t max_steering_right;
-  int32_t neutral_steering;
+  struct __attribute__((packed)) Configurables
+  {
+    // steering config (refers to average front wheel angle in radian)
+    float max_steering_left;
+    float max_steering_right;
+    float neutral_steering;  // should be between max and min
 
-  int32_t max_throttle;
-  int32_t min_throttle;
-  int32_t zero_throttle;
+    // throttle config (unit is implementation-dependant, typically unit-less out of 1.0)
+    float max_throttle;
+    float min_throttle;
+    float zero_throttle;  // should be smaller than min
 
-  int32_t max_brake;
-  int32_t min_brake;
-  int32_t zero_brake;
-
-  uint32_t control_timeout_ms;
-  uint32_t comm_timeout_ms;
-  uint32_t sensor_timeout_ms;
+    // brake config (in psi)
+    float max_brake;
+    float min_brake;
+    float zero_brake;  // should be smaller than min
+    
+    // watchdog timeouts (in millisecond)
+    uint32_t control_timeout_ms;  // timeout for control packets 
+    uint32_t comm_timeout_ms;  // timeout for heartbeat packets
+    uint32_t sensor_timeout_ms;  // timeout between two sensor pollings
+  } values;
 
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class StateTransitionGkcPacket : public GkcPacket
@@ -158,54 +165,89 @@ public:
   uint8_t requested_state = 0;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class ControlGkcPacket : public GkcPacket
 {
 public:
   const static uint8_t FIRST_BYTE = 0xAB;
-  int32_t throttle;
-  int32_t steering;
-  int32_t brake;
+  float throttle;  // paddle percentage out of 1.0
+  float steering;  // average front wheel angle in radian
+  float brake;  // target brake pressure in psi
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class SensorGkcPacket : public GkcPacket
 {
 public:
   const static uint8_t FIRST_BYTE = 0xAC;
-  float wheel_speed_1;
-  float wheel_speed_2;
-  float voltage;
-  float brake_pressure;
-  float steering_angle_rad;
-  uint8_t state;
+  struct __attribute__((packed)) SensorValues
+  {
+    float wheel_speed_fl;  // wheel speeds in rpm
+    float wheel_speed_fr;
+    float wheel_speed_rl;
+    float wheel_speed_rr;
+
+    float voltage;  // battery voltage in volt
+    float amperage; // battery current draw in amp
+
+    float brake_pressure;  // brake pressure in psi
+    float throttle_pos; // throttle paddle position out of 1.0
+    float steering_angle_rad;  // (left +, right -) average wheel angle of the two front wheels in rad
+    float servo_angle_rad; // (left +, right -) servo offset from center in rad
+
+    bool fault_brake; // fault flag in actuation subsystem
+    bool fault_throttle;
+    bool fault_steering;
+
+    bool fault_critical; // fault flag with severity level
+    bool fault_error;
+    bool fault_warning;
+    bool fault_info;
+  } values;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class Shutdown1GkcPacket : public GkcPacket
 {
 public:
   const static uint8_t FIRST_BYTE = 0xA2;
-  uint32_t sequence_number;
+  uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class Shutdown2GkcPacket : public GkcPacket
 {
 public:
   const static uint8_t FIRST_BYTE = 0xA3;
-  uint32_t sequence_number;
+  uint32_t seq_number;
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
-  void publish(GkcPacketSubscriber & sub) {return sub.packet_callback(*this);}
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
+};
+
+class LogPacket : public GkcPacket
+{
+public:
+  const static uint8_t FIRST_BYTE = 0xA3;
+  enum Severity
+  {
+    INFO = 0,
+    WARNING = 1,
+    ERROR = 2,
+    CRITICAL = 3
+  } level;
+  std::string what;
+  RawGkcPacket::SharedPtr encode() const;
+  void decode(const RawGkcPacket & raw);
+  void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
 };
 
 class GkcPacketUtils
@@ -231,22 +273,72 @@ public:
     return packet_ptr;
   }
 
+  /**
+   * @brief Write some primitive types or struct to buffer
+   * 
+   * @tparam T the datatype
+   * @param where iterator to the start of destination
+   * @param to_write value to write
+   * @return GkcBuffer::iterator an iterator to the end of the copied content
+   */
   template<typename T>
-  static void write_to_buffer(GkcBuffer::iterator where, const T & to_write)
+  static GkcBuffer::iterator write_to_buffer(GkcBuffer::iterator where, const T & to_write)
   {
-    const uint8_t * num_start =
+    const uint8_t * start =
       static_cast<const uint8_t *>(static_cast<const void *>(&to_write));
-    std::copy(num_start, num_start + sizeof(T), where);
+    const auto end = start + sizeof(T);
+    std::copy(start, end, where);
+    return where + sizeof(T);
   }
 
+  /**
+   * @brief pointer version of `write_to_buffer()`
+   * 
+   * @tparam T the datatype
+   * @param where iterator to the start of destination
+   * @param to_write value to write
+   * @return uint8_t* a pointer to the end of the copied content
+   */
   template<typename T>
-  static void read_from_buffer(GkcBuffer::const_iterator where, T & to_read)
+  static uint8_t * write_to_buffer(const uint8_t * & where, const T & to_write)
   {
-    to_read = *static_cast<const T *>(static_cast<const void *>(&(*where)));
+    const uint8_t * start =
+      static_cast<const uint8_t *>(static_cast<const void *>(&to_write));
+    const auto end = start + sizeof(T);
+    std::copy(start, end, where);
+    return end;
+  }
+
+  /**
+   * @brief Read content from part of a buffer utilizing `sizeof(T)`
+   * 
+   * @tparam T datatype to be read in
+   * @param where where to start reading the content
+   * @param to_read where to store the read content
+   * @return GkcBuffer::const_iterator an iterator to the end of the read bytes in the buffer
+   */
+  template<typename T>
+  static GkcBuffer::const_iterator read_from_buffer(GkcBuffer::const_iterator where, T & to_read)
+  {
+    to_read = *static_cast<const T *>(static_cast<const void *>(&(*where)));  // TODO (haoru): use reinterpret_cast?
+    return where + sizeof(T);
+  }
+
+  /**
+   * @brief pointer version of `read_from_buffer`
+   * 
+   * @tparam T datatype to be read in
+   * @param where where to start reading the content
+   * @param to_read where to store the read content
+   * @return const uint8_t* a pointer to the end of the read bytes in the buffer
+   */
+  template<typename T>
+  static const uint8_t * read_from_buffer(const uint8_t * & where, T & to_read)
+  {
+    to_read = *static_cast<const T *>(static_cast<const void *>(where));
+    return where + sizeof(T);
   }
 };
-
-
 }  // namespace gkc
 }  // namespace tritonai
 #endif  // TAI_GOKART_PACKET__GKC_PACKETS_HPP_

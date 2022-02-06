@@ -46,6 +46,20 @@ private:
       GkcPacketUtils::CreatePacket<ResetMcuGkcPacket>},
     {HeartbeatGkcPacket::FIRST_BYTE,
       GkcPacketUtils::CreatePacket<HeartbeatGkcPacket>},
+    {ConfigGkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<ConfigGkcPacket>},
+    {StateTransitionGkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<StateTransitionGkcPacket>},
+    {ControlGkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<ControlGkcPacket>},
+    {SensorGkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<SensorGkcPacket>},
+    {Shutdown1GkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<Shutdown1GkcPacket>},
+    {Shutdown2GkcPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<Shutdown2GkcPacket>},
+    {LogPacket::FIRST_BYTE,
+      GkcPacketUtils::CreatePacket<LogPacket>},
   };
 
   void (* _debug)(std::string);
