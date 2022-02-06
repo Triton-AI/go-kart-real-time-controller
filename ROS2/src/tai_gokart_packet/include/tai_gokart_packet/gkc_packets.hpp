@@ -61,7 +61,7 @@ public:
   typedef std::shared_ptr<GkcPacket> SharedPtr;
   typedef std::unique_ptr<GkcPacket> UniquePtr;
   uint64_t timestamp = 0;
-
+  virtual ~GkcPacket();
   virtual RawGkcPacket::SharedPtr encode() const;
   virtual void decode(const RawGkcPacket & raw);
   virtual void publish(GkcPacketSubscriber & sub);
@@ -269,8 +269,7 @@ public:
   template<typename T>
   static GkcPacket::SharedPtr CreatePacket()
   {
-    T t;
-    GkcPacket::SharedPtr packet_ptr = std::make_shared<GkcPacket>(t);
+    GkcPacket::SharedPtr packet_ptr = std::shared_ptr<GkcPacket>(new T);
     packet_ptr->timestamp = get_timestamp();
     return packet_ptr;
   }

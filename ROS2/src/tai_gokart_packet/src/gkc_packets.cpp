@@ -58,6 +58,25 @@ std::shared_ptr<GkcBuffer> RawGkcPacket::encode()
   return buffer;
 }
 
+GkcPacket::~GkcPacket()
+{
+}
+
+RawGkcPacket::SharedPtr GkcPacket::encode() const
+{
+  return std::make_shared<RawGkcPacket>();
+}
+
+void GkcPacket::decode(const RawGkcPacket & raw)
+{
+  (void)raw;
+}
+
+void GkcPacket::publish(GkcPacketSubscriber & sub)
+{
+  (void)sub;
+}
+
 int64_t GkcPacketUtils::get_timestamp()
 {
   auto now = std::chrono::system_clock::now();
