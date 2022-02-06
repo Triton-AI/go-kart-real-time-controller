@@ -28,7 +28,17 @@ public:
   void packet_callback(const tritonai::gkc::SensorGkcPacket & packet) {(void)packet;}
   void packet_callback(const tritonai::gkc::Shutdown1GkcPacket & packet) {(void)packet;}
   void packet_callback(const tritonai::gkc::Shutdown2GkcPacket & packet) {(void)packet;}
-  void packet_callback(const tritonai::gkc::LogPacket & packet) {(void)packet;}
+  void packet_callback(const tritonai::gkc::LogPacket & packet)
+  {
+    (void)packet;
+    GkcPacketFactoryReceiveTest = true;
+    GkcPacketFactoryReceiveTestPacket = tritonai::gkc::LogPacket();
+    GkcPacketFactoryReceiveTestPacket.level = packet.level;
+    GkcPacketFactoryReceiveTestPacket.what = packet.what;
+  }
+
+  bool GkcPacketFactoryReceiveTest = false;
+  tritonai::gkc::LogPacket GkcPacketFactoryReceiveTestPacket;
 };
 
 TEST(TestGkcPacketUtils, CreatePacket) {
@@ -209,5 +219,53 @@ TEST(TestGkcPackets, LogPacket) {
   reconstructed_packet.decode(*raw_packet);
   EXPECT_EQ(reconstructed_packet.level, packet.level);
   EXPECT_EQ(reconstructed_packet.what, packet.what);
+  SUCCEED();
+}
+
+TEST(TestGkcPacketFactory, Receive) {
+  auto sub = Sub();
+  auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
+  auto packet = tritonai::gkc::LogPacket();
+  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.what = "Hello World";
+  auto bytes = packet.encode()->encode();
+  factory.Receive(*bytes);
+  EXPECT_TRUE(sub.GkcPacketFactoryReceiveTest);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.level, packet.level);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.what, packet.what);
+  SUCCEED();
+}
+
+TEST(TestGkcPacketFactory, IncompleteReceive) {
+  auto sub = Sub();
+  auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
+  auto packet = tritonai::gkc::LogPacket();
+  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.what = "Hello World";
+  auto bytes = packet.encode()->encode();
+  factory.Receive(tritonai::gkc::GkcBuffer((*bytes).begin(), (*bytes).begin() + 6));
+  EXPECT_FALSE(sub.GkcPacketFactoryReceiveTest);
+  factory.Receive(tritonai::gkc::GkcBuffer((*bytes).begin() + 6, (*bytes).end()));
+  EXPECT_TRUE(sub.GkcPacketFactoryReceiveTest);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.level, packet.level);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.what, packet.what);
+  SUCCEED();
+}
+
+TEST(TestGkcPacketFactory, CorruptedReceive) {
+  auto sub = Sub();
+  auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
+  auto packet = tritonai::gkc::LogPacket();
+  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.what = "Hello World";
+  auto bytes = packet.encode()->encode();
+  (*bytes)[14] = 'B';
+  factory.Receive(*bytes);
+  EXPECT_FALSE(sub.GkcPacketFactoryReceiveTest);
+  bytes = packet.encode()->encode();
+  factory.Receive(*bytes);
+  EXPECT_TRUE(sub.GkcPacketFactoryReceiveTest);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.level, packet.level);
+  EXPECT_EQ(sub.GkcPacketFactoryReceiveTestPacket.what, packet.what);
   SUCCEED();
 }
