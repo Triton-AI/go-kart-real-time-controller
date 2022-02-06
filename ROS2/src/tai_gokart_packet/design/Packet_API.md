@@ -18,13 +18,13 @@ The Packet API takes substantial reference from VESC packet API.
 
 A standard packet begins with byte 0x02, followed by 1 byte of payload length. Payload cannot exceed 256 bytes. After that, 2 bytes are used for payload checksum, and finally there is one termination byte 0x03.
 
-The first byte (FB) of each payload type is uniquely identifiable.
+The **first byte (FB)** of each payload type is uniquely identifiable.
 
 Extended packet is not needed and not implemented at the moment, but any LLCI implementation should not rule out the possibility of such packet in the future.
 
 To avoid garbage data, unused payload buffer section should be initiated to 0x00. 0x00 cannot have any substaintial meaning in the playload other than data.
 
-## Base Payloads
+## Core Payloads
 
 These messages concerns the basic communication and device control, such as communication establishment, firmware version, MCU reset, heartbeat, and watchdog.
 
@@ -58,7 +58,7 @@ Payload size: 4 Byte
 
 FB: 0x07
 
-The MCU's response of firmware version in three `uint8`: version x.y.z
+The MCU's response of firmware version in three `uint8`: version `x.y.z`
 
 ### Reset MCU
 
@@ -70,15 +70,23 @@ The PC commanding a MCU reset. the four bytes of the message contains alternatin
 
 ### Heartbeat
 
-Payload size: 2 Byte
+Payload size: 3 Byte
 
 FB: 0xAA
 
-Bidirectional message with a `uint8` rolling counter that increments or overflows with every message sent to the other side.
+Bidirectional message with a `uint8` rolling counter that increments or overflows with every message sent to the other side, as well as a `uint8` state code of the MCU state machine state, which is only sent by MCU.
+
+### Log
+
+Payload size: variable
+
+FB: 0xAD
+
+String log with severity level of info, warning, error or critical. The `c_str` content of the string cannot exceed 253 byte. The response to different severity levels is implementation-dependant.
 
 ## Configuration Payloads
 
-These messages set or get the configurations of the controller.
+These messages set the configurations of the controller.
 
 ### Configuation
 
@@ -126,25 +134,28 @@ The MCU responds to the shutdown command from the computer by adding one to the 
 
 ### Sensors
 
-Payload size: 22 Byte
+These messages request or send GKC state, and sensor feedbacks.
+
+Payload size: 48 Byte
 
 FB: 0xAC
 
-The MCU sends sensor data to the PC, containing wheel speeds, pressures, voltage, etc.
+The MCU sends sensor data to the PC, containing wheel speeds, pressures, voltage, etc., and sensor fault flags.
 
-These messages request or send GKC state, and sensor feedbacks.
+## Reference
 
-| Description              | Payload size (Byte) | First Byte of Payload | Data Structure                                        | Sender |
-|--------------------------|---------------------|-----------------------|-------------------------------------------------------|--------|
-| Handshake #1             | 5                   | 0x04                  | uint32 sequence number.                               | PC     |
-| Handshake #2             | 5                   | 0x05                  | uint32 sequence number                                | MCU    |
-| Request Firmware Version | 1                   | 0x06                  |                                                       | PC     |
-| Respond Firmware Version | 4                   | 0x07                  | 3 * uint8 version number                              | MCU    |
-| Reset MCU                | 5                   | 0xFF                  | uint32 magic number                                   | PC     |
-| Heartbeat                | 2                   | 0xAA                  | uint8 rolling counter                                 | Both   |
-| Configuration            | 49                  | 0xA0                  | actuation calibrations and watchdog timeout intervals | PC     |
-| Control                  | 13                  | 0xAB                  | integer steering, throttle, and brake                 | PC     |
-| State Transition         | 2                   | 0xA1                  | uint8 state number                                    | PC     |
-| Sensors                  | 22                  | 0xAC                  | sensor readings                                       | MCU    |
-| Shutdown \#1             | 5                   | 0xA2                  | uint32 sequence number.                               | PC     |
-| Shutdown \#2             | 5                   | 0xA3                  | uint32 sequence number.                               | MCU    |
+| Description              | Payload size | Payload FB | Data Structure                     | Sender |
+|--------------------------|--------------|------------|------------------------------------|--------|
+| Handshake #1             | 5            | 0x04       | uint32 sequence number.            | PC     |
+| Handshake #2             | 5            | 0x05       | uint32 sequence number             | MCU    |
+| Request Firmware Version | 1            | 0x06       |                                    | PC     |
+| Respond Firmware Version | 4            | 0x07       | 3 * uint8 version number           | MCU    |
+| Reset MCU                | 5            | 0xFF       | uint32 magic number                | PC     |
+| Heartbeat                | 2            | 0xAA       | uint8 rolling counter              | Both   |
+| Log                      | Variable     | 0xAD       | severity and string content        | Both   |
+| Configuration            | 49           | 0xA0       | a packed struct of configurables   | PC     |
+| Control                  | 13           | 0xAB       | throttle, steering, and brake      | PC     |
+| State Transition         | 2            | 0xA1       | uint8 state number                 | PC     |
+| Sensors                  | 22           | 0xAC       | a packed struct of sensor readings | MCU    |
+| Shutdown \#1             | 5            | 0xA2       | uint32 sequence number.            | PC     |
+| Shutdown \#2             | 5            | 0xA3       | uint32 sequence number.            | MCU    |
