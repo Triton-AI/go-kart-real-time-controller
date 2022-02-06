@@ -45,11 +45,11 @@ std::shared_ptr<GkcBuffer> RawGkcPacket::encode()
   static constexpr uint8_t NUM_NON_PAYLOAD_BYTES = 5;
   auto buffer = std::make_unique<GkcBuffer>(payload_size + NUM_NON_PAYLOAD_BYTES, 0);
   auto pos_payload_size =
-    GkcPacketUtils::write_to_buffer(buffer->begin(), RawGkcPacket::START_BYTE);
+    GkcPacketUtils::write_to_buffer(buffer->begin(), static_cast<uint8_t>(START_BYTE));
   auto pos_payload = GkcPacketUtils::write_to_buffer(pos_payload_size, payload_size);
   auto pos_checksum = std::copy(payload.begin(), payload.end(), pos_payload);
   auto pos_end_byte = GkcPacketUtils::write_to_buffer(pos_checksum, checksum);
-  auto pos_end = GkcPacketUtils::write_to_buffer(pos_end_byte, RawGkcPacket::END_BYTE);
+  auto pos_end = GkcPacketUtils::write_to_buffer(pos_end_byte, static_cast<uint8_t>(END_BYTE));
   if (pos_end != buffer->end()) {
     // Sanity check: encoding should use the entire buffer
     throw std::runtime_error(
@@ -75,14 +75,6 @@ void GkcPacket::decode(const RawGkcPacket & raw)
 void GkcPacket::publish(GkcPacketSubscriber & sub)
 {
   (void)sub;
-}
-
-int64_t GkcPacketUtils::get_timestamp()
-{
-  auto now = std::chrono::system_clock::now();
-  auto duration = now.time_since_epoch();
-  return std::chrono::duration_cast<std::chrono::milliseconds>(duration)
-         .count();
 }
 
 uint16_t GkcPacketUtils::calc_crc16(const GkcBuffer & payload)

@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "tai_gokart_packet/gkc_packet_subscriber.hpp"
+#include "tai_gokart_packet/gkc_packet_utils.hpp"
 
 namespace tritonai
 {
@@ -250,96 +251,6 @@ public:
   RawGkcPacket::SharedPtr encode() const;
   void decode(const RawGkcPacket & raw);
   void publish(GkcPacketSubscriber & sub) {sub.packet_callback(*this);}
-};
-
-class GkcPacketUtils
-{
-public:
-  /**
-   * @brief calculate CRC-16 checksum
-   * (https://github.com/vedderb/bldc/blob/master/crc.c)
-   *
-   * @param payload payload used to calculate checksum
-   * @return uint16_t CRC-16 checksum
-   */
-  static uint16_t calc_crc16(const GkcBuffer & payload);
-  static int64_t get_timestamp();
-  static void debug_cout(std::string str);
-
-  template<typename T>
-  static GkcPacket::SharedPtr CreatePacket()
-  {
-    GkcPacket::SharedPtr packet_ptr = std::shared_ptr<GkcPacket>(new T);
-    packet_ptr->timestamp = get_timestamp();
-    return packet_ptr;
-  }
-
-  /**
-   * @brief Write some primitive types or struct to buffer
-   *
-   * @tparam T the datatype
-   * @param where iterator to the start of destination
-   * @param to_write value to write
-   * @return GkcBuffer::iterator an iterator to the end of the copied content
-   */
-  template<typename T>
-  static GkcBuffer::iterator write_to_buffer(GkcBuffer::iterator where, const T & to_write)
-  {
-    const uint8_t * start =
-      static_cast<const uint8_t *>(static_cast<const void *>(&to_write));
-    const auto end = start + sizeof(T);
-    std::copy(start, end, where);
-    return where + sizeof(T);
-  }
-
-  /**
-   * @brief pointer version of `write_to_buffer()`
-   *
-   * @tparam T the datatype
-   * @param where iterator to the start of destination
-   * @param to_write value to write
-   * @return uint8_t* a pointer to the end of the copied content
-   */
-  template<typename T>
-  static uint8_t * write_to_buffer(const uint8_t * & where, const T & to_write)
-  {
-    const uint8_t * start =
-      static_cast<const uint8_t *>(static_cast<const void *>(&to_write));
-    const auto end = start + sizeof(T);
-    std::copy(start, end, where);
-    return end;
-  }
-
-  /**
-   * @brief Read content from part of a buffer utilizing `sizeof(T)`
-   *
-   * @tparam T datatype to be read in
-   * @param where where to start reading the content
-   * @param to_read where to store the read content
-   * @return GkcBuffer::const_iterator an iterator to the end of the read bytes in the buffer
-   */
-  template<typename T>
-  static GkcBuffer::const_iterator read_from_buffer(GkcBuffer::const_iterator where, T & to_read)
-  {
-    // TODO(haoru): reinterpret_cast?
-    to_read = *static_cast<const T *>(static_cast<const void *>(&(*where)));
-    return where + sizeof(T);
-  }
-
-  /**
-   * @brief pointer version of `read_from_buffer`
-   *
-   * @tparam T datatype to be read in
-   * @param where where to start reading the content
-   * @param to_read where to store the read content
-   * @return const uint8_t* a pointer to the end of the read bytes in the buffer
-   */
-  template<typename T>
-  static const uint8_t * read_from_buffer(const uint8_t * & where, T & to_read)
-  {
-    to_read = *static_cast<const T *>(static_cast<const void *>(where));
-    return where + sizeof(T);
-  }
 };
 }  // namespace gkc
 }  // namespace tritonai
