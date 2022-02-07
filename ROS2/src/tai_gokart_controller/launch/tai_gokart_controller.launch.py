@@ -13,7 +13,7 @@ def generate_launch_description():
         get_package_share_directory('tai_gokart_controller'),
         'params',
         'tai_gokart_controller_config.yaml'
-        )
+    )
     return LaunchDescription([
         Node(
             package='tai_gokart_controller',
