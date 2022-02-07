@@ -39,6 +39,11 @@ enum CommIO
 };
 
 class ICommInterface;
+
+/**
+ * @brief An interface to receive content from low level communication implementation
+ *
+ */
 class ICommRecvHandler
 {
 public:
@@ -48,23 +53,75 @@ public:
   virtual void receive(const GkcBuffer & buffer) = 0;
 };
 
+/**
+ * @brief An interface for low level communication implementation
+ *
+ */
 class ICommInterface
 {
 public:
   typedef std::shared_ptr<ICommInterface> SharedPtr;
   typedef std::unique_ptr<ICommInterface> UniquePtr;
+
   ICommInterface() = delete;
+
+  /**
+   * @brief Initialize the interface with a receive handler
+   *
+   * @param handler receive handler
+   */
   explicit ICommInterface(ICommRecvHandler * handler) {handler_ = handler;}
+
+  /**
+   * @brief register a different receive handler than the one assigned at construction
+   *
+   * @param handler receive handler
+   */
   virtual void register_handler(ICommRecvHandler * handler)
   {
     handler_ = handler;
   }
+
   virtual ~ICommInterface() {}
+
+  /**
+   * @brief Configure the interface
+   *
+   * @param configs a map of configurable names and values
+   * @return true if success; false if failed
+   */
   virtual bool configure(const ConfigList & configs) = 0;
+
+  /**
+   * @brief Open the interface after configuration
+   *
+   * @return true if success; false if failed
+   */
   virtual bool open() = 0;
+
+  /**
+   * @brief If the interface has been opened and is ready for IO operation
+   */
   virtual bool is_open() = 0;
+
+  /**
+   * @brief Close the interface and release resources
+   *
+   * @return true if success; false if failed
+   */
   virtual bool close() = 0;
+
+  /**
+   * @brief Send a buffer
+   *
+   * @param buffer to send
+   * @return size_t number of bytes sent
+   */
   virtual size_t send(const GkcBuffer & buffer) = 0;
+
+  /**
+   * @brief Get the interface type
+   */
   virtual CommIO get_io_type() = 0;
 
 protected:
@@ -74,6 +131,13 @@ protected:
 class CommUtils
 {
 public:
+  /**
+  * @brief helper for creating implementations of `ICommInterface`
+  *
+  * @tparam T an implementation of `ICommInterface`
+  * @param handler receive handler to be linked to the interface
+  * @return ICommInterface::SharedPtr a new interface instance
+  */
   template<typename T>
   static ICommInterface::SharedPtr CreateCommInterface(ICommRecvHandler * handler)
   {
