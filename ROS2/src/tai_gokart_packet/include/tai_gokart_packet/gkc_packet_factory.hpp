@@ -30,7 +30,8 @@ public:
 
   void Receive(const GkcBuffer & buffer);
   std::shared_ptr<GkcBuffer> Send(const GkcPacket::SharedPtr & packet);
-  std::shared_ptr<GkcBuffer> Send(const GkcPacket& packet);
+  std::shared_ptr<GkcBuffer> Send(const GkcPacket & packet);
+
 private:
   typedef GkcPacket::SharedPtr (* Creator)();
   const std::unordered_map<uint8_t, Creator> fb_lookup = {
