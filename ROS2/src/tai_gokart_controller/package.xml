@@ -11,12 +11,14 @@
 
   <build_depend>tai_gokart_msgs</build_depend>
   <build_depend>tai_gokart_packet</build_depend>
+  <build_depend>serial_driver</build_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
   <exec_depend>tai_gokart_msgs</exec_depend>
   <exec_depend>tai_gokart_packet</exec_depend>
+  <exec_depend>serial_driver</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
