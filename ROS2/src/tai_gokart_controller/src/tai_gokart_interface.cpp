@@ -1,5 +1,5 @@
 /**
- * @file tai_gokart_controller.cpp
+ * @file tai_gokart_interface.cpp
  * @author Haoru Xue (haoru.xue@autoware.org)
  * @brief
  * @version 0.1
@@ -12,7 +12,7 @@
 #include <string>
 #include <memory>
 
-#include "tai_gokart_controller/tai_gokart_controller.hpp"
+#include "tai_gokart_controller/tai_gokart_interface.hpp"
 #include "tai_gokart_packet/version.hpp"
 
 namespace tritonai

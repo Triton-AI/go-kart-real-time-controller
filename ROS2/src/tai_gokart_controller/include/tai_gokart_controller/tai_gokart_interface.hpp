@@ -1,5 +1,5 @@
 /**
- * @file tai_gokart_controller.hpp
+ * @file tai_gokart_interface.hpp
  * @author Haoru Xue (haoru.xue@autoware.org)
  * @brief
  * @version 0.1
@@ -8,8 +8,8 @@
  * @copyright Copyright 2022 Triton AI
  *
  */
-#ifndef TAI_GOKART_CONTROLLER__TAI_GOKART_CONTROLLER_HPP_
-#define TAI_GOKART_CONTROLLER__TAI_GOKART_CONTROLLER_HPP_
+#ifndef TAI_GOKART_CONTROLLER__TAI_GOKART_INTERFACE_HPP_
+#define TAI_GOKART_CONTROLLER__TAI_GOKART_INTERFACE_HPP_
 
 #include <queue>
 #include <string>
@@ -90,4 +90,4 @@ protected:
 };
 }  // namespace gkc
 }  // namespace tritonai
-#endif  // TAI_GOKART_CONTROLLER__TAI_GOKART_CONTROLLER_HPP_
+#endif  // TAI_GOKART_CONTROLLER__TAI_GOKART_INTERFACE_HPP_

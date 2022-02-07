@@ -15,12 +15,12 @@ ament_auto_find_build_dependencies()
 
 set(GKC_INTERFACE_LIB_SRC
   src/comm.cpp
-  src/tai_gokart_controller.cpp
+  src/tai_gokart_interface.cpp
 )
 
 set(GKC_INTERFACE_LIB_HEADERS
   include/tai_gokart_controller/comm.hpp
-  include/tai_gokart_controller/tai_gokart_controller.hpp
+  include/tai_gokart_controller/tai_gokart_interface.hpp
   include/tai_gokart_controller/config.hpp
 )
 
