@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(tai_gokart_controller)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -27,9 +30,13 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
+  find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  set(TEST_SOURCES test/test_gkc_interface.cpp)
+  set(TEST_GKC_INTERFACE_EXE test_gkc_interface)
+  ament_add_gtest(${TEST_GKC_INTERFACE_EXE} ${TEST_SOURCES})
+  target_link_libraries(${TEST_GKC_INTERFACE_EXE} ${PROJECT_NAME})
 endif()
 
-ament_package()
+ament_auto_package()
