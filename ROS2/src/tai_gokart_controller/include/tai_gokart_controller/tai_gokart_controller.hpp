@@ -68,7 +68,7 @@ public:
 protected:
   std::queue<LogPacket> logs_ {};
   std::shared_ptr<ICommInterface> comm_ {};
-  std::unique_ptr<std::thread> heartbeat_thread;
+  std::unique_ptr<std::thread> heartbeat_thread {};
   std::unique_ptr<GkcPacketFactory> factory_ {};
   std::unique_ptr<SensorGkcPacket> sensors_ {};
   std::unique_ptr<uint32_t> handshake_number {};
