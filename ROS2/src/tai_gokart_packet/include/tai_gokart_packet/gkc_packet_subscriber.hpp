@@ -14,6 +14,7 @@ namespace tritonai
 {
 namespace gkc
 {
+class GkcPacketFactory;
 class Handshake1GkcPacket;
 class Handshake2GkcPacket;
 class GetFirmwareVersionGkcPacket;
@@ -34,6 +35,7 @@ class LogPacket;
 class GkcPacketSubscriber
 {
 public:
+  friend GkcPacketFactory;
   virtual void packet_callback(const Handshake1GkcPacket & packet) = 0;
   virtual void packet_callback(const Handshake2GkcPacket & packet) = 0;
   virtual void packet_callback(const GetFirmwareVersionGkcPacket & packet) = 0;
