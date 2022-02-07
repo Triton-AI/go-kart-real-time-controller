@@ -1,5 +1,11 @@
 /**:
   ros__parameters:
+    # comm interface
+    comm_type: 'serial' # serial, ethernet, can
+    serial:
+      port: '/dev/ttyACM0'
+      baud_rate: 115200
+
     # steering config (refers to average front wheel angle in radian)
     max_steering_left: 0.524  # (left +, righ -)
     max_steering_right: -0.524  # (left +, righ -)
