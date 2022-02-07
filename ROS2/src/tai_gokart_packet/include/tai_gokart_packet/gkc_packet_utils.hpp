@@ -23,6 +23,17 @@ namespace gkc
 {
 using GkcBuffer = std::vector<uint8_t>;
 class GkcPacket;
+
+enum GkcState
+{
+  Uninitialized = 0,
+  Initializing = 1,
+  Inactive = 2,
+  Active = 3,
+  Shutdown = 4,
+  Emergency = 255
+};
+
 class GkcPacketUtils
 {
 public:
