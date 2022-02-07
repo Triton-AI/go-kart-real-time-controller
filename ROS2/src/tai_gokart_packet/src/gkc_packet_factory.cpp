@@ -112,6 +112,6 @@ std::shared_ptr<GkcBuffer> GkcPacketFactory::Send(const GkcPacket::SharedPtr & p
 std::shared_ptr<GkcBuffer> GkcPacketFactory::Send(const GkcPacket& packet)
 {
   return packet.encode()->encode();
-};
+}
 }  // namespace gkc
 }  // namespace tritonai
