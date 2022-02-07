@@ -5,13 +5,13 @@ jobs:
   build-ros2:
     runs-on: ubuntu-latest
     container:
-      image: ros:foxy
+      image: ros:galactic
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
       - name: Create Workspace
         run: |
-          mkdir -p src_tmp/vesc
+          mkdir -p src_tmp/go-kart-real-time-controller
           mv `find -maxdepth 1 -not -name . -not -name src_tmp` src_tmp/go-kart-real-time-controller/
           mv src_tmp/ src/
       - name: Install Dependencies
