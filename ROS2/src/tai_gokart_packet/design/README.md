@@ -87,3 +87,7 @@ int main()
 }
 
 ```
+
+## Packet API
+
+Review the [packet API documentation](Packet_API.md) for more details.
