@@ -10,4 +10,6 @@ The packet is capable of sending control messages and receive sensor and state r
 
 ## Inner Working
 
+![GKC State Machine](gkc_state_machine.png)
+
 ## Known Issues
