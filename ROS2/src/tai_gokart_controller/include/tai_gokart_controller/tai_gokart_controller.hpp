@@ -28,7 +28,7 @@ namespace tritonai
 {
 namespace gkc
 {
-class GkcInterface : protected GkcPacketSubscriber, protected ICommRecvHandler
+class GkcInterface : public GkcPacketSubscriber, public ICommRecvHandler
 {
 public:
   GkcInterface() = delete;
@@ -47,24 +47,6 @@ public:
   GkcState get_state() const;
   LogPacket::SharedPtr get_next_log();
 
-protected:
-  std::queue<LogPacket> logs_ {};
-  std::shared_ptr<ICommInterface> comm_ {};
-  std::unique_ptr<std::thread> heartbeat_thread;
-  std::unique_ptr<GkcPacketFactory> factory_ {};
-  std::unique_ptr<SensorGkcPacket> sensors_ {};
-  std::unique_ptr<uint32_t> handshake_number {};
-  std::unique_ptr<uint32_t> shutdown_number {};
-
-  GkcState current_state_ {GkcState::Uninitialized};
-
-  // Inner working
-  bool try_change_state(const GkcState & target_state, const uint32_t & timeout_ms);
-  void stream_heartbeats();
-  bool send_handshake();
-  bool send_shutdown();
-  bool send_firmware_version_request();
-
   // ICommRecvHandler
   void receive(const GkcBuffer & buffer);
 
@@ -82,6 +64,24 @@ protected:
   void packet_callback(const Shutdown1GkcPacket & packet);
   void packet_callback(const Shutdown2GkcPacket & packet);
   void packet_callback(const LogPacket & packet);
+
+protected:
+  std::queue<LogPacket> logs_ {};
+  std::shared_ptr<ICommInterface> comm_ {};
+  std::unique_ptr<std::thread> heartbeat_thread;
+  std::unique_ptr<GkcPacketFactory> factory_ {};
+  std::unique_ptr<SensorGkcPacket> sensors_ {};
+  std::unique_ptr<uint32_t> handshake_number {};
+  std::unique_ptr<uint32_t> shutdown_number {};
+
+  GkcState current_state_ {GkcState::Uninitialized};
+
+  // Inner working
+  bool try_change_state(const GkcState & target_state, const uint32_t & timeout_ms);
+  void stream_heartbeats();
+  bool send_handshake();
+  bool send_shutdown();
+  bool send_firmware_version_request();
 
   typedef ICommInterface::SharedPtr (* Creator)(ICommRecvHandler * handler);
   const std::unordered_map<std::string, Creator> comm_lookup_ = {

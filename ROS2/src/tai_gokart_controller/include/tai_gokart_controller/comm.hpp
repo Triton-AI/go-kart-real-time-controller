@@ -38,16 +38,7 @@ enum CommIO
   CAN = 2
 };
 
-class CommUtils
-{
-public:
-  template<typename T>
-  static ICommInterface::SharedPtr CreateCommInterface(ICommRecvHandler * handler)
-  {
-    return std::make_shared<T>(handler);
-  }
-};
-
+class ICommInterface;
 class ICommRecvHandler
 {
 public:
@@ -78,6 +69,16 @@ public:
 
 protected:
   ICommRecvHandler * handler_;
+};
+
+class CommUtils
+{
+public:
+  template<typename T>
+  static ICommInterface::SharedPtr CreateCommInterface(ICommRecvHandler * handler)
+  {
+    return std::make_shared<T>(handler);
+  }
 };
 
 class SerialInterface : public ICommInterface
