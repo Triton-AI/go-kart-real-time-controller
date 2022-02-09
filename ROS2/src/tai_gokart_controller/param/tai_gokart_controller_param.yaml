@@ -1,5 +1,8 @@
 /**:
   ros__parameters:
+    # node
+    sensor_pub_hz: 100
+
     # comm interface
     comm_type: 'serial' # serial, ethernet, can
     serial:

@@ -82,7 +82,7 @@ Payload size: variable
 
 FB: 0xAD
 
-String log with severity level of info, warning, error or critical. The `c_str` content of the string cannot exceed 253 byte. The response to different severity levels is implementation-dependant.
+String log with severity level of info, warning, error or fatal. The `c_str` content of the string cannot exceed 253 byte. The response to different severity levels is implementation-dependant.
 
 ## Configuration Payloads
 

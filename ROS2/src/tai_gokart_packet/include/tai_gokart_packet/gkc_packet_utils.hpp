@@ -24,7 +24,7 @@ namespace gkc
 using GkcBuffer = std::vector<uint8_t>;
 class GkcPacket;
 
-enum GkcState
+enum GkcLifecycle
 {
   Uninitialized = 0,
   Initializing = 1,

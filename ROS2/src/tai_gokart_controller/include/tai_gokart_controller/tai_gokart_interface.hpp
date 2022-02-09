@@ -44,8 +44,8 @@ public:
   bool release_emergency_stop(const uint32_t & timeout_ms);
   bool shutdown(const uint32_t & timeout_ms);
   const SensorGkcPacket & get_sensors() const;
-  GkcState get_state() const;
-  LogPacket::SharedPtr get_next_log();
+  GkcLifecycle get_state() const;
+  std::shared_ptr<LogPacket> get_next_log();
 
   // ICommRecvHandler
   void receive(const GkcBuffer & buffer);
@@ -74,10 +74,10 @@ protected:
   std::unique_ptr<uint32_t> handshake_number {};
   std::unique_ptr<uint32_t> shutdown_number {};
 
-  GkcState current_state_ {GkcState::Uninitialized};
+  GkcLifecycle current_state_ {GkcLifecycle::Uninitialized};
 
   // Inner working
-  bool try_change_state(const GkcState & target_state, const uint32_t & timeout_ms);
+  bool try_change_state(const GkcLifecycle & target_state, const uint32_t & timeout_ms);
   void stream_heartbeats();
   bool send_handshake();
   bool send_shutdown();

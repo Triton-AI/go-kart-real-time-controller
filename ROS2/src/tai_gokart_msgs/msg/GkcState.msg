@@ -17,7 +17,7 @@ bool fault_brake  # fault flag in actuation subsystem
 bool fault_throttle
 bool fault_steering
 
-bool fault_critical  # fault flag with severity level
+bool fault_fatal  # fault flag with severity level
 bool fault_error
 bool fault_warning
 bool fault_info

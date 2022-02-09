@@ -26,6 +26,20 @@ union Configurable {
   int64_t integer;
   double floating;
   bool boolean;
+
+  explicit Configurable(const std::string & string_type)
+  {
+    if (string_type.size() + 1 > 32) {
+      throw std::runtime_error(
+              "A string casted to Configurable cannot exceed 32 chars, including null terminator.");
+    }
+    std::snprintf(&string[0], sizeof(string), string_type.c_str());
+  }
+
+  operator std::string() const
+  {
+    return std::string(&string[0]);
+  }
 };
 
 typedef std::pair<std::string, Configurable> Config;

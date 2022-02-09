@@ -23,7 +23,7 @@ GkcInterface::GkcInterface(const ConfigList & configs)
 : factory_(std::make_unique<GkcPacketFactory>(this, GkcPacketUtils::debug_cout))
 {
   // Find and initialize a comm interface based on config
-  std::string comm_name = &(configs.at("comm_type").string[0]);
+  std::string comm_name = static_cast<std::string>(configs.at("comm_type"));
   comm_ = comm_lookup_.at(comm_name)(this);
   if (!comm_) {
     throw std::runtime_error("Cannot find comm interface with name \"" + comm_name + ".\"");
@@ -60,7 +60,7 @@ bool GkcInterface::send_control(const ControlGkcPacket & control_packet)
 
 bool GkcInterface::initialize(const ConfigGkcPacket & config_packet, const uint32_t & timeout_ms)
 {
-  if (current_state_ != GkcState::Uninitialized) {
+  if (current_state_ != GkcLifecycle::Uninitialized) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC can only be initialized in uninitialized state. Current state is " +
@@ -80,12 +80,12 @@ bool GkcInterface::initialize(const ConfigGkcPacket & config_packet, const uint3
   std::this_thread::sleep_for(std::chrono::milliseconds(timeout_ms));
 
   // Check state code to determine if initialization was successful
-  return current_state_ == GkcState::Initializing;
+  return current_state_ == GkcLifecycle::Initializing;
 }
 
 bool GkcInterface::activate(const uint32_t & timeout_ms)
 {
-  if (current_state_ != GkcState::Inactive) {
+  if (current_state_ != GkcLifecycle::Inactive) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC can only be initialized in inactive state. Current state is " +
@@ -93,12 +93,12 @@ bool GkcInterface::activate(const uint32_t & timeout_ms)
     logs_.emplace(log);
     return false;
   }
-  return try_change_state(GkcState::Active, timeout_ms);
+  return try_change_state(GkcLifecycle::Active, timeout_ms);
 }
 
 bool GkcInterface::deactivate(const uint32_t & timeout_ms)
 {
-  if (current_state_ != GkcState::Active) {
+  if (current_state_ != GkcLifecycle::Active) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC can only be deactivate in active state. Current state is " +
@@ -106,24 +106,24 @@ bool GkcInterface::deactivate(const uint32_t & timeout_ms)
     logs_.emplace(log);
     return false;
   }
-  return try_change_state(GkcState::Inactive, timeout_ms);
+  return try_change_state(GkcLifecycle::Inactive, timeout_ms);
 }
 
 bool GkcInterface::emergency_stop(const uint32_t & timeout_ms)
 {
-  if (current_state_ == GkcState::Uninitialized) {
+  if (current_state_ == GkcLifecycle::Uninitialized) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC can not go to emergency state in uninitialized state.";
     logs_.emplace(log);
     return false;
   }
-  return try_change_state(GkcState::Emergency, timeout_ms);
+  return try_change_state(GkcLifecycle::Emergency, timeout_ms);
 }
 
 bool GkcInterface::shutdown(const uint32_t & timeout_ms)
 {
-  if (current_state_ != GkcState::Active && current_state_ != GkcState::Inactive) {
+  if (current_state_ != GkcLifecycle::Active && current_state_ != GkcLifecycle::Inactive) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC can only be shutdown in active or inactive state. Current state is " +
@@ -131,7 +131,7 @@ bool GkcInterface::shutdown(const uint32_t & timeout_ms)
     logs_.emplace(log);
     return false;
   }
-  bool succeeded = try_change_state(GkcState::Shutdown, timeout_ms);
+  bool succeeded = try_change_state(GkcLifecycle::Shutdown, timeout_ms);
   succeeded &= send_shutdown();
   return succeeded;
 }
@@ -141,12 +141,12 @@ const SensorGkcPacket & GkcInterface::get_sensors() const
   return *sensors_;
 }
 
-GkcState GkcInterface::get_state() const
+GkcLifecycle GkcInterface::get_state() const
 {
   return current_state_;
 }
 
-LogPacket::SharedPtr GkcInterface::get_next_log()
+std::shared_ptr<LogPacket> GkcInterface::get_next_log()
 {
   if (!logs_.size()) {
     return nullptr;
@@ -156,7 +156,7 @@ LogPacket::SharedPtr GkcInterface::get_next_log()
   return log;
 }
 
-bool GkcInterface::try_change_state(const GkcState & target_state, const uint32_t & timeout_ms)
+bool GkcInterface::try_change_state(const GkcLifecycle & target_state, const uint32_t & timeout_ms)
 {
   if (!comm_ || !comm_->is_open()) {
     return false;
@@ -280,7 +280,7 @@ void GkcInterface::packet_callback(const ResetMcuGkcPacket & packet)
 void GkcInterface::packet_callback(const HeartbeatGkcPacket & packet)
 {
   // TODO(haoru): handle heartbeat
-  current_state_ = static_cast<GkcState>(packet.state);
+  current_state_ = static_cast<GkcLifecycle>(packet.state);
 }
 
 void GkcInterface::packet_callback(const ConfigGkcPacket & packet)

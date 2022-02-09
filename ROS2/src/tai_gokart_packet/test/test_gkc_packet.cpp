@@ -211,7 +211,7 @@ TEST(TestGkcPackets, Shutdown2GkcPacket) {
 
 TEST(TestGkcPackets, LogPacket) {
   auto packet = tritonai::gkc::LogPacket();
-  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.level = tritonai::gkc::LogPacket::Severity::FATAL;
   packet.what = "Hello World";
   auto raw_packet = packet.encode();
   EXPECT_EQ(raw_packet->payload[0], tritonai::gkc::LogPacket::FIRST_BYTE);
@@ -226,7 +226,7 @@ TEST(TestGkcPacketFactory, Receive) {
   auto sub = Sub();
   auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
   auto packet = tritonai::gkc::LogPacket();
-  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.level = tritonai::gkc::LogPacket::Severity::FATAL;
   packet.what = "Hello World";
   auto bytes = packet.encode()->encode();
   factory.Receive(*bytes);
@@ -240,7 +240,7 @@ TEST(TestGkcPacketFactory, IncompleteReceive) {
   auto sub = Sub();
   auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
   auto packet = tritonai::gkc::LogPacket();
-  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.level = tritonai::gkc::LogPacket::Severity::FATAL;
   packet.what = "Hello World";
   auto bytes = packet.encode()->encode();
   factory.Receive(tritonai::gkc::GkcBuffer((*bytes).begin(), (*bytes).begin() + 6));
@@ -256,7 +256,7 @@ TEST(TestGkcPacketFactory, CorruptedReceive) {
   auto sub = Sub();
   auto factory = tritonai::gkc::GkcPacketFactory(&sub, tritonai::gkc::GkcPacketUtils::debug_cout);
   auto packet = tritonai::gkc::LogPacket();
-  packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+  packet.level = tritonai::gkc::LogPacket::Severity::FATAL;
   packet.what = "Hello World";
   auto bytes = packet.encode()->encode();
   (*bytes)[14] = 'B';
