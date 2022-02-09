@@ -34,6 +34,27 @@ GkcNode::GkcNode(const rclcpp::NodeOptions & options)
 LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
   const rclcpp_lifecycle::State &)
 {
+  // If in emergency mode, bring out of emergency
+  if (interface_ && interface_->get_state() == GkcLifecycle::Emergency) {
+    static constexpr uint32_t RELEASE_ESTOP_PAUSE_S = 5;
+    static constexpr uint32_t RELEASE_ESTOP_WAIT_MS = 100;
+    RCLCPP_WARN(get_logger(), "Attempting to remove emergency state.");
+    RCLCPP_WARN(get_logger(), "!!! BRAKE WILL BE REMOVED IN %d SECOND !!!", RELEASE_ESTOP_PAUSE_S);
+    std::this_thread::sleep_for(std::chrono::seconds(RELEASE_ESTOP_PAUSE_S));
+    RCLCPP_WARN(get_logger(), "Requesting to remove emergency state.");
+    if (interface_->release_emergency_stop(RELEASE_ESTOP_WAIT_MS)) {
+      RCLCPP_WARN(get_logger(), "Success. Emergency state removed.");
+      RCLCPP_WARN(get_logger(), "!!! BRAKE IS REMOVED !!!");
+      RCLCPP_INFO(
+        get_logger(),
+        "Please ignore Lifecycle transition failure. The vehicle is now in uninitialized state.");
+    } else {
+      RCLCPP_ERROR(get_logger(), "Failed. Vehicle still in emergency state. Brake still on.");
+    }
+    return LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
+
+  // If going through normal initialization
   static bool first_time = true;
   static auto pkt = ConfigGkcPacket();
   if (first_time) {
@@ -220,3 +241,6 @@ void GkcNode::state_pub_timer_callback()
 }
 }  // namespace gkc
 }  // namespace tritonai
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(tritonai::gkc::GkcNode)

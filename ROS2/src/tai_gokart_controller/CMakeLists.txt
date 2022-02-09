@@ -31,6 +31,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   ${GKC_INTERFACE_LIB_HEADERS}
 )
 
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN tritonai::gkc::GkcNode
+  EXECUTABLE tai_gokart_controller_node
+)
+
 if(BUILD_TESTING)
   set(ament_cmake_copyright_FOUND TRUE)
   find_package(ament_lint_auto REQUIRED)
