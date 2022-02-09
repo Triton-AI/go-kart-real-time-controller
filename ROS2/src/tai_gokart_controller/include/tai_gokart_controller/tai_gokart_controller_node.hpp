@@ -11,6 +11,8 @@
 #ifndef TAI_GOKART_CONTROLLER__TAI_GOKART_CONTROLLER_NODE_HPP_
 #define TAI_GOKART_CONTROLLER__TAI_GOKART_CONTROLLER_NODE_HPP_
 
+#include <memory>
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"

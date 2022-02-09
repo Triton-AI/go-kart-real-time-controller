@@ -26,20 +26,18 @@ GkcNode::GkcNode(const rclcpp::NodeOptions & options)
     Config{"comm_type", Configurable(declare_parameter<std::string>("comm_type", "serial"))},
     Config{"serial_port",
       Configurable(declare_parameter<std::string>("serial.port", "/dev/ttyACM0"))},
-    Config{"baud_rate", Configurable{.integer = declare_parameter<int64_t>(
-          "serial.baud_rate",
-          115200)}},
+    Config{"baud_rate", Configurable(declare_parameter<int64_t>("serial.baud_rate", 115200))},
   };
   interface_ = std::make_unique<GkcInterface>(configs_);
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
   static bool first_time = true;
   static auto pkt = ConfigGkcPacket();
   if (first_time) {
-    double sensor_pub_interval = 1.0 / declare_parameter<uint32_t>("sensor_pub_hz", 100);
+    double sensor_pub_interval = 1.0 / declare_parameter<int32_t>("sensor_pub_hz", 100);
     state_pub_ = create_publisher<GkcState>("gkc_state", rclcpp::QoS{10});
     cmd_sub_ =
       create_subscription<GkcCommand>(
@@ -86,7 +84,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_activate(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
   static constexpr uint32_t WAIT_MS = 100;
   if (interface_->activate(WAIT_MS)) {
@@ -99,7 +97,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_activate(
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_deactivate(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
   static constexpr uint32_t WAIT_MS = 100;
   if (interface_->activate(WAIT_MS)) {
@@ -114,7 +112,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_deactivate(
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_cleanup(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
   static constexpr uint32_t WAIT_MS = 100;
   RCLCPP_INFO(get_logger(), "Attempting to bring the vehicle out of emergency mode.");
@@ -128,7 +126,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_cleanup(
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_shutdown(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
   static constexpr uint32_t WAIT_MS = 100;
   if (interface_->shutdown(WAIT_MS)) {
@@ -141,16 +139,14 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_shutdown(
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_error(
-  const rclcpp_lifecycle::State & previous_state)
+  const rclcpp_lifecycle::State &)
 {
-  if (!interface_)
-  {
+  if (!interface_) {
     RCLCPP_FATAL(get_logger(), "Communication to MCU not established. Exiting.");
     return LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
 
-  if (interface_->get_state() == GkcLifecycle::Uninitialized)
-  {
+  if (interface_->get_state() == GkcLifecycle::Uninitialized) {
     RCLCPP_FATAL(get_logger(), "Error raised in uninitialized state. Exiting.");
     return LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
@@ -179,51 +175,48 @@ void GkcNode::cmd_callback(const GkcCommand::SharedPtr cmd_msg)
 
 void GkcNode::state_pub_timer_callback()
 {
-if (interface_ && state_pub_)
-{
-  GkcState state = GkcState();
-  const auto & vals = interface_->get_sensors().values;
-  state.amperage = vals.amperage;
-  state.brake_pressure = vals.brake_pressure;
-  state.fault_brake = vals.fault_brake;
-  state.fault_error = vals.fault_error;
-  state.fault_fatal = vals.fault_fatal;
-  state.fault_info = vals.fault_info;
-  state.fault_steering = vals.fault_steering;
-  state.fault_throttle = vals.fault_throttle;
-  state.fault_warning = vals.fault_warning;
-  state.servo_angle_rad = vals.servo_angle_rad;
-  state.steering_angle_rad = vals.steering_angle_rad;
-  state.throttle_pos = vals.throttle_pos;
-  state.voltage = vals.voltage;
-  state.wheel_speed_fl = vals.wheel_speed_fl;
-  state.wheel_speed_fr = vals.wheel_speed_fr;
-  state.wheel_speed_rl = vals.wheel_speed_rl;
-  state.wheel_speed_rr = vals.wheel_speed_rr;
-  state.state = static_cast<uint8_t>(interface_->get_state());
-  state.stamp = get_clock()->now();
-  state_pub_->publish(state);
-}
+  if (interface_ && state_pub_) {
+    GkcState state = GkcState();
+    const auto & vals = interface_->get_sensors().values;
+    state.amperage = vals.amperage;
+    state.brake_pressure = vals.brake_pressure;
+    state.fault_brake = vals.fault_brake;
+    state.fault_error = vals.fault_error;
+    state.fault_fatal = vals.fault_fatal;
+    state.fault_info = vals.fault_info;
+    state.fault_steering = vals.fault_steering;
+    state.fault_throttle = vals.fault_throttle;
+    state.fault_warning = vals.fault_warning;
+    state.servo_angle_rad = vals.servo_angle_rad;
+    state.steering_angle_rad = vals.steering_angle_rad;
+    state.throttle_pos = vals.throttle_pos;
+    state.voltage = vals.voltage;
+    state.wheel_speed_fl = vals.wheel_speed_fl;
+    state.wheel_speed_fr = vals.wheel_speed_fr;
+    state.wheel_speed_rl = vals.wheel_speed_rl;
+    state.wheel_speed_rr = vals.wheel_speed_rr;
+    state.state = static_cast<uint8_t>(interface_->get_state());
+    state.stamp = get_clock()->now();
+    state_pub_->publish(state);
+  }
 
 // Dump the logs off the interface
-while (const auto log = interface_->get_next_log())
-{
-  switch(log->level)
-  {
-    case LogPacket::Severity::INFO:
-      RCLCPP_INFO(get_logger(), log->what.c_str());
-      break;
-    case LogPacket::Severity::WARNING:
-    RCLCPP_WARN(get_logger(), log->what.c_str());
-      break;
-    case LogPacket::Severity::ERROR:
-    RCLCPP_ERROR(get_logger(), log->what.c_str());
-      break;
-    case LogPacket::Severity::FATAL:
-    RCLCPP_FATAL(get_logger(), log->what.c_str());
-      break;
+  while (const auto log = interface_->get_next_log()) {
+    switch (log->level) {
+      case LogPacket::Severity::INFO:
+        RCLCPP_INFO(get_logger(), log->what.c_str());
+        break;
+      case LogPacket::Severity::WARNING:
+        RCLCPP_WARN(get_logger(), log->what.c_str());
+        break;
+      case LogPacket::Severity::ERROR:
+        RCLCPP_ERROR(get_logger(), log->what.c_str());
+        break;
+      case LogPacket::Severity::FATAL:
+        RCLCPP_FATAL(get_logger(), log->what.c_str());
+        break;
+    }
   }
-}
 }
 }  // namespace gkc
 }  // namespace tritonai
