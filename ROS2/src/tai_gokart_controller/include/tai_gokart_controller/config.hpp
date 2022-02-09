@@ -36,6 +36,21 @@ union Configurable {
     std::snprintf(&string[0], sizeof(string), "%s", string_type.c_str());
   }
 
+  explicit Configurable(const int64_t & integer_type)
+  {
+    integer = integer_type;
+  }
+
+  explicit Configurable(const double & floating_type)
+  {
+    floating = floating_type;
+  }
+
+  explicit Configurable(const bool & boolean_type)
+  {
+    boolean = boolean_type;
+  }
+
   operator std::string() const
   {
     return std::string(&string[0]);
