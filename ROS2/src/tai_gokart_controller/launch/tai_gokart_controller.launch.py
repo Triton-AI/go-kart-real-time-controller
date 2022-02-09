@@ -11,14 +11,16 @@ def generate_launch_description():
 
     gkc_config = os.path.join(
         get_package_share_directory('tai_gokart_controller'),
-        'params',
-        'tai_gokart_controller_config.yaml'
+        'param',
+        'tai_gokart_controller_param.yaml'
     )
     return LaunchDescription([
         Node(
             package='tai_gokart_controller',
             executable='tai_gokart_controller_node',
             name='tai_gokart_controller_node',
-            parameters=[gkc_config]
+            parameters=[gkc_config],
+            emulate_tty=True,
+            output='screen'
         ),
     ])

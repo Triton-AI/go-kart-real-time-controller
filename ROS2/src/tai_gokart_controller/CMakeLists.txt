@@ -46,4 +46,8 @@ if(BUILD_TESTING)
   target_link_libraries(${TEST_GKC_INTERFACE_EXE} ${PROJECT_NAME})
 endif()
 
-ament_auto_package()
+ament_auto_package(
+  INSTALL_TO_SHARE
+    launch
+    param
+)

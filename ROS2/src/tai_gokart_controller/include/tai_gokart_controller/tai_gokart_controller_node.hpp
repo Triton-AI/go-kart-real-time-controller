@@ -59,6 +59,7 @@ private:
 
   void cmd_callback(const GkcCommand::SharedPtr cmd_msg);
   void state_pub_timer_callback();
+  void dump_logs();
 };
 }  // namespace gkc
 }  // namespace tritonai

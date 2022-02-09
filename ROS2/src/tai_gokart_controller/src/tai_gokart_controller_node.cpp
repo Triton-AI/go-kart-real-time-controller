@@ -51,6 +51,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
     } else {
       RCLCPP_ERROR(get_logger(), "Failed. Vehicle still in emergency state. Brake still on.");
     }
+    dump_logs();
     return LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
 
@@ -76,7 +77,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
     pkt.values.zero_throttle = declare_parameter<float>("zero_throttle", 0.0);
     pkt.values.max_brake = declare_parameter<float>("max_brake", 2000.0);
     pkt.values.min_brake = declare_parameter<float>("min_brake", 200.0);
-    pkt.values.min_brake = declare_parameter<float>("min_brake", 0.0);
+    pkt.values.zero_brake = declare_parameter<float>("zero_brake", 0.0);
     pkt.values.control_timeout_ms = declare_parameter<int64_t>("control_timeout_ms", 100);
     pkt.values.comm_timeout_ms = declare_parameter<int64_t>("comm_timeout_ms", 100);
     pkt.values.sensor_timeout_ms = declare_parameter<int64_t>("sensor_timeout_ms", 100);
@@ -93,6 +94,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
     while ((get_clock()->now() - start_time).seconds() < MAX_INITIALIZE_WAIT_S) {
       if (interface_->get_state() == GkcLifecycle::Inactive) {
         RCLCPP_INFO(get_logger(), "MCU is initialized and in inactive state.");
+        dump_logs();
         return LifecycleNodeInterface::CallbackReturn::SUCCESS;
       }
       std::this_thread::sleep_for(std::chrono::duration<double>(1.0));
@@ -101,6 +103,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
   } else {
     RCLCPP_ERROR(get_logger(), "Failed to send configuration to the MCU.");
   }
+  dump_logs();
   return LifecycleNodeInterface::CallbackReturn::FAILURE;
 }
 
@@ -221,7 +224,15 @@ void GkcNode::state_pub_timer_callback()
     state_pub_->publish(state);
   }
 
-// Dump the logs off the interface
+  dump_logs();
+}
+
+void GkcNode::dump_logs()
+{
+  if (!interface_) {
+    return;
+  }
+  // Dump the logs off the interface
   while (const auto log = interface_->get_next_log()) {
     switch (log->level) {
       case LogPacket::Severity::INFO:
