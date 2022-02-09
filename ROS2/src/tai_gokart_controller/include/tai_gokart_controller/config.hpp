@@ -33,7 +33,7 @@ union Configurable {
       throw std::runtime_error(
               "A string casted to Configurable cannot exceed 32 chars, including null terminator.");
     }
-    std::snprintf(&string[0], sizeof(string), string_type.c_str());
+    std::snprintf(&string[0], sizeof(string), "%s", string_type.c_str());
   }
 
   operator std::string() const
