@@ -126,7 +126,7 @@ public:
       static_cast<const uint8_t *>(static_cast<const void *>(&to_write));
     const auto end = start + sizeof(T);
     std::copy(start, end, where);
-    return end;
+    return const_cast<uint8_t *>(end);
   }
 
   /**
