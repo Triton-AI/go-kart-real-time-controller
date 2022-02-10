@@ -207,7 +207,7 @@ public:
     bool fault_throttle;
     bool fault_steering;
 
-    bool fault_critical;  // fault flag with severity level
+    bool fault_fatal;  // fault flag with severity level
     bool fault_error;
     bool fault_warning;
     bool fault_info;
@@ -246,7 +246,7 @@ public:
     INFO = 0,
     WARNING = 1,
     ERROR = 2,
-    CRITICAL = 3
+    FATAL = 3
   } level;
   std::string what;
   RawGkcPacket::SharedPtr encode() const;

@@ -61,7 +61,7 @@ int main()
 
  // Example 1: I want to send a log packet
  auto packet = tritonai::gkc::LogPacket();
- packet.level = tritonai::gkc::LogPacket::Severity::CRITICAL;
+ packet.level = tritonai::gkc::LogPacket::Severity::FATAL;
  packet.what = "Hello World";
  // Let the factory encode it into a buffer (std::vector<uint8_t>)
  auto buffer_to_send = factory.Send(packet);
