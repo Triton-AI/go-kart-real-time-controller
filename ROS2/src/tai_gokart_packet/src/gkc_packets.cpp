@@ -52,8 +52,7 @@ std::shared_ptr<GkcBuffer> RawGkcPacket::encode()
   auto pos_end = GkcPacketUtils::write_to_buffer(pos_end_byte, static_cast<uint8_t>(END_BYTE));
   if (pos_end != buffer->end()) {
     // Sanity check: encoding should use the entire buffer
-    throw std::runtime_error(
-            "Error when encoding raw gkc packet. Potential payload size mismatch.");
+    std::cerr << "Error when encoding raw gkc packet. Potential payload size mismatch.";
   }
   return buffer;
 }
