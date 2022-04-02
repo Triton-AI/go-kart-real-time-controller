@@ -22,6 +22,12 @@ namespace tritonai
 namespace gkc
 {
 using GkcBuffer = std::vector<uint8_t>;
+struct RawGkcBuffer
+{
+  const uint8_t * data;
+  size_t size;
+};
+
 class GkcPacket;
 
 enum GkcLifecycle

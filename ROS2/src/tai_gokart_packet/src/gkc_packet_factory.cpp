@@ -24,7 +24,7 @@ GkcPacketFactory::GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::
   this->_sub = sub;
 }
 
-void GkcPacketFactory::Receive(const GkcBuffer & buffer)
+void GkcPacketFactory::Receive(const RawGkcBuffer & buffer)
 {
   static constexpr int MIN_PACKET_SIZE = 6;
   static constexpr int MIN_PAYLOAD_SIZE = 1;
@@ -32,8 +32,8 @@ void GkcPacketFactory::Receive(const GkcBuffer & buffer)
   static constexpr int NUM_BYTE_BEFORE_PAYLOAD = 2;
   static int start_idx = 0;
 
-  _buffer.reserve(_buffer.size() + buffer.size());
-  _buffer.insert(_buffer.end(), buffer.begin(), buffer.end());
+  _buffer.reserve(_buffer.size() + buffer.size);
+  _buffer.insert(_buffer.end(), buffer.data, buffer.data + buffer.size);
 
   // Look for the start byte
 look_for_next_start: for (const auto & byte : _buffer) {
@@ -103,6 +103,14 @@ look_for_next_start: for (const auto & byte : _buffer) {
     // Need more bytes to complete a packet. Wait for the next receive.
     return;
   }
+}
+
+void GkcPacketFactory::Receive(const GkcBuffer & buffer)
+{
+  RawGkcBuffer buff;
+  buff.data = buffer.data();
+  buff.size = buffer.size();
+  Receive(buff);
 }
 
 std::shared_ptr<GkcBuffer> GkcPacketFactory::Send(const GkcPacket::SharedPtr & packet)

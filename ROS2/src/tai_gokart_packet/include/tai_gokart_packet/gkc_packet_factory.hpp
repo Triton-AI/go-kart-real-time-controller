@@ -29,6 +29,7 @@ public:
   GkcPacketFactory(GkcPacketSubscriber * sub, void(*debug)(std::string));
 
   void Receive(const GkcBuffer & buffer);
+  void Receive(const RawGkcBuffer & buffer);
   std::shared_ptr<GkcBuffer> Send(const GkcPacket::SharedPtr & packet);
   std::shared_ptr<GkcBuffer> Send(const GkcPacket & packet);
 
