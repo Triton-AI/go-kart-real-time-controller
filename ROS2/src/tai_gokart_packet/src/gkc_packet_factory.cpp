@@ -10,10 +10,10 @@
  */
 
 #include "tai_gokart_packet/gkc_packet_factory.hpp"
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <string>
-#include <algorithm>
 namespace tritonai
 {
 namespace gkc
@@ -43,17 +43,20 @@ look_for_next_start: for (const auto & byte : _buffer) {
     ++start_idx;
   }
 
-  if (_buffer.size() <= static_cast<uint32_t>(start_idx + 1)) {
+  if (_buffer.size() < static_cast<uint32_t>(start_idx)) {
     // No packet start found. erase buffer.
-    _buffer = GkcBuffer();
+    _buffer.clear();
     start_idx = 0;
     return;
   }
 
   // Are there enough bytes to form a packet?
-  if (_buffer.size() - start_idx >= MIN_PACKET_SIZE) {
+  const auto num_remaining_bytes = _buffer.size() - start_idx;
+  if (num_remaining_bytes >= MIN_PACKET_SIZE) {
     uint8_t payload_size = _buffer[start_idx + 1];
-    if (static_cast<uint32_t>(start_idx + payload_size + NUM_NON_PAYLOAD_BYTE) > _buffer.size()) {
+    if (static_cast<uint32_t>(payload_size + NUM_NON_PAYLOAD_BYTE) >
+      num_remaining_bytes)
+    {
       // Need more bytes to complete a packet. Wait for the next receive.
       return;
     }
@@ -93,10 +96,10 @@ look_for_next_start: for (const auto & byte : _buffer) {
 
     // One packet found. Are there others?
     // First erase the parsed packet from buffer
-    start_idx = 0;
     _buffer.erase(
       _buffer.begin(),
       _buffer.begin() + start_idx + NUM_NON_PAYLOAD_BYTE + payload_size);
+    start_idx = 0;
     // Then go to look for the next packet
     goto look_for_next_start;
   } else {

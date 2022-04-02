@@ -151,7 +151,7 @@ The MCU sends sensor data to the PC, containing wheel speeds, pressures, voltage
 | Request Firmware Version | 1            | 0x06       |                                    | PC     |
 | Respond Firmware Version | 4            | 0x07       | 3 * uint8 version number           | MCU    |
 | Reset MCU                | 5            | 0xFF       | uint32 magic number                | PC     |
-| Heartbeat                | 2            | 0xAA       | uint8 rolling counter              | Both   |
+| Heartbeat                | 3            | 0xAA       | uint8 rolling counter and state    | Both   |
 | Log                      | Variable     | 0xAD       | severity and string content        | Both   |
 | Configuration            | 49           | 0xA0       | a packed struct of configurables   | PC     |
 | Control                  | 13           | 0xAB       | throttle, steering, and brake      | PC     |
