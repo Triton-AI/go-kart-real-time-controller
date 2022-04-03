@@ -71,7 +71,20 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
     state_pub_timer_ = create_timer(
       this, get_clock(), rclcpp::duration<float>(sensor_pub_interval), [this] {
         state_pub_timer_callback();
-      });
+      }); 
+    if (declare_parameter<bool>("enable_js_sub", false))
+    {
+      declare_parameter<int>("js_throttle_axis");
+      declare_parameter<int>("js_brake_axis");
+      declare_parameter<int>("js_steering_axis");
+      declare_parameter<double>("js_throttle_offset");
+      declare_parameter<double>("js_brake_offset");
+      declare_parameter<double>("js_steering_offset");
+      declare_parameter<double>("js_throttle_scale");
+      declare_parameter<double>("js_brake_scale");
+      declare_parameter<double>("js_steering_scale");
+      joy_sub_ = create_subscription<Joy>("/joy", rclcpp::QoS{10}, std::bind(&GkcNode::joy_callback, this, _1));
+    }
     pkt.values.max_steering_left = declare_parameter<float>("max_steering_left", 0.524);
     pkt.values.max_steering_right = declare_parameter<float>("max_steering_right", -0.524);
     pkt.values.neutral_steering = declare_parameter<float>("neutral_steering", 0.0);
@@ -198,6 +211,15 @@ void GkcNode::cmd_callback(const GkcCommand::SharedPtr cmd_msg)
   if (cmd_msg->emergency_stop) {
     throw std::runtime_error("Emergency stop is requested by a command publisher.");
   }
+}
+
+void GkcNode::joy_callback(const Joy::SharedPtr joy_msg)
+{
+  auto cmd_msg = std::make_shared<GkcCommand>();
+  cmd_msg->throttle = (joy_msg->axes[get_parameter("js_throttle_axis").as_int()] + get_parameter("js_throttle_offset").as_double()) * get_parameter("js_throttle_scale").as_double();
+  cmd_msg->steering = (joy_msg->axes[get_parameter("js_steering_axis").as_int()] + get_parameter("js_steering_offset").as_double()) * get_parameter("js_steering_scale").as_double();
+  cmd_msg->brake = (joy_msg->axes[get_parameter("js_brake_axis").as_int()] + get_parameter("js_brake_offset").as_double()) * get_parameter("js_brake_scale").as_double();
+  cmd_callback(cmd_msg);
 }
 
 void GkcNode::state_pub_timer_callback()

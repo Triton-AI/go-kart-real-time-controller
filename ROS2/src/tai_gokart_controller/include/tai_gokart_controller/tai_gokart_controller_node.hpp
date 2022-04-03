@@ -17,6 +17,8 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 
+#include "sensor_msgs/msg/joy.hpp"
+
 #include "tai_gokart_msgs/msg/gkc_command.hpp"
 #include "tai_gokart_msgs/msg/gkc_state.hpp"
 
@@ -29,6 +31,7 @@ namespace gkc
 using tai_gokart_msgs::msg::GkcCommand;
 using tai_gokart_msgs::msg::GkcState;
 using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
+using sensor_msgs::msg::Joy;
 
 class GkcNode : public rclcpp_lifecycle::LifecycleNode
 {
@@ -52,12 +55,14 @@ public:
 private:
   rclcpp_lifecycle::LifecyclePublisher<GkcState>::SharedPtr state_pub_;
   rclcpp::Subscription<GkcCommand>::SharedPtr cmd_sub_;
+  rclcpp::Subscription<Joy>::SharedPtr joy_sub_;
   rclcpp::TimerBase::SharedPtr state_pub_timer_;
   std::unique_ptr<GkcInterface> interface_;
   ConfigList configs_;
 
 
   void cmd_callback(const GkcCommand::SharedPtr cmd_msg);
+  void joy_callback(const Joy::SharedPtr joy_msg);
   void state_pub_timer_callback();
   void dump_logs();
 };
