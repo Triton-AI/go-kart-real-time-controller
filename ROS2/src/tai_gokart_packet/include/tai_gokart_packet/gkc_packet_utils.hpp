@@ -36,7 +36,6 @@ enum GkcLifecycle
   Initializing = 1,
   Inactive = 2,
   Active = 3,
-  Shutdown = 4,
   Emergency = 255
 };
 

@@ -43,7 +43,7 @@ public:
   bool emergency_stop(const uint32_t & timeout_ms);
   bool release_emergency_stop(const uint32_t & timeout_ms);
   bool shutdown(const uint32_t & timeout_ms);
-  const SensorGkcPacket & get_sensors() const;
+  const SensorGkcPacket * get_sensors() const;
   GkcLifecycle get_state() const;
   std::shared_ptr<LogPacket> get_next_log();
 
@@ -73,6 +73,8 @@ protected:
   std::unique_ptr<SensorGkcPacket> sensors_ {};
   std::unique_ptr<uint32_t> handshake_number {};
   std::unique_ptr<uint32_t> shutdown_number {};
+  bool handshake_good_ = false;
+  bool initialized_ = false;
 
   GkcLifecycle current_state_ {GkcLifecycle::Uninitialized};
 

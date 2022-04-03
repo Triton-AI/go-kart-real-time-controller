@@ -28,7 +28,9 @@ GkcNode::GkcNode(const rclcpp::NodeOptions & options)
       Configurable(declare_parameter<std::string>("serial.port", "/dev/ttyACM0"))},
     Config{"baud_rate", Configurable(declare_parameter<int64_t>("serial.baud_rate", 115200))},
   };
+  RCLCPP_INFO(get_logger(), "Establishing comm with GKC...");
   interface_ = std::make_unique<GkcInterface>(configs_);
+  dump_logs();
 }
 
 LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
@@ -61,6 +63,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
   if (first_time) {
     double sensor_pub_interval = 1.0 / declare_parameter<int32_t>("sensor_pub_hz", 100);
     state_pub_ = create_publisher<GkcState>("gkc_state", rclcpp::QoS{10});
+    state_pub_->on_activate();
     cmd_sub_ =
       create_subscription<GkcCommand>(
       "gkc_cmd", rclcpp::QoS{10},
@@ -84,7 +87,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
     first_time = false;
   }
   RCLCPP_INFO(get_logger(), "Sending configuration to the MCU.");
-  static constexpr uint32_t CONFIGURE_WAIT_MS = 100;
+  static constexpr uint32_t CONFIGURE_WAIT_MS = 1000;
   static constexpr uint32_t MAX_INITIALIZE_WAIT_S = 60;
   if (interface_->initialize(pkt, CONFIGURE_WAIT_MS)) {
     RCLCPP_INFO(
@@ -110,7 +113,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_configure(
 LifecycleNodeInterface::CallbackReturn GkcNode::on_activate(
   const rclcpp_lifecycle::State &)
 {
-  static constexpr uint32_t WAIT_MS = 100;
+  static constexpr uint32_t WAIT_MS = 1000;
   if (interface_->activate(WAIT_MS)) {
     RCLCPP_WARN(get_logger(), "!!! VEHICLE IS ALIVE !!!");
     return LifecycleNodeInterface::CallbackReturn::SUCCESS;
@@ -123,8 +126,8 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_activate(
 LifecycleNodeInterface::CallbackReturn GkcNode::on_deactivate(
   const rclcpp_lifecycle::State &)
 {
-  static constexpr uint32_t WAIT_MS = 100;
-  if (interface_->activate(WAIT_MS)) {
+  static constexpr uint32_t WAIT_MS = 1000;
+  if (interface_->deactivate(WAIT_MS)) {
     RCLCPP_WARN(get_logger(), "VEHICLE IS PAUSED");
     return LifecycleNodeInterface::CallbackReturn::SUCCESS;
   } else {
@@ -138,7 +141,7 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_deactivate(
 LifecycleNodeInterface::CallbackReturn GkcNode::on_cleanup(
   const rclcpp_lifecycle::State &)
 {
-  static constexpr uint32_t WAIT_MS = 100;
+  static constexpr uint32_t WAIT_MS = 1000;
   RCLCPP_INFO(get_logger(), "Attempting to bring the vehicle out of emergency mode.");
   if (interface_->release_emergency_stop(WAIT_MS)) {
     RCLCPP_INFO(get_logger(), "Done. Vehicle is now in uninitialized state.");
@@ -152,13 +155,13 @@ LifecycleNodeInterface::CallbackReturn GkcNode::on_cleanup(
 LifecycleNodeInterface::CallbackReturn GkcNode::on_shutdown(
   const rclcpp_lifecycle::State &)
 {
-  static constexpr uint32_t WAIT_MS = 100;
+  static constexpr uint32_t WAIT_MS = 1000;
   if (interface_->shutdown(WAIT_MS)) {
     RCLCPP_INFO(get_logger(), "Vehicle shutdown.");
     return LifecycleNodeInterface::CallbackReturn::SUCCESS;
   } else {
     RCLCPP_INFO(get_logger(), "Vehicle failed to shutdown. It should now go to emergency mode.");
-    return LifecycleNodeInterface::CallbackReturn::FAILURE;
+    return LifecycleNodeInterface::CallbackReturn::ERROR;
   }
 }
 
@@ -201,27 +204,30 @@ void GkcNode::state_pub_timer_callback()
 {
   if (interface_ && state_pub_) {
     GkcState state = GkcState();
-    const auto & vals = interface_->get_sensors().values;
-    state.amperage = vals.amperage;
-    state.brake_pressure = vals.brake_pressure;
-    state.fault_brake = vals.fault_brake;
-    state.fault_error = vals.fault_error;
-    state.fault_fatal = vals.fault_fatal;
-    state.fault_info = vals.fault_info;
-    state.fault_steering = vals.fault_steering;
-    state.fault_throttle = vals.fault_throttle;
-    state.fault_warning = vals.fault_warning;
-    state.servo_angle_rad = vals.servo_angle_rad;
-    state.steering_angle_rad = vals.steering_angle_rad;
-    state.throttle_pos = vals.throttle_pos;
-    state.voltage = vals.voltage;
-    state.wheel_speed_fl = vals.wheel_speed_fl;
-    state.wheel_speed_fr = vals.wheel_speed_fr;
-    state.wheel_speed_rl = vals.wheel_speed_rl;
-    state.wheel_speed_rr = vals.wheel_speed_rr;
-    state.state = static_cast<uint8_t>(interface_->get_state());
-    state.stamp = get_clock()->now();
-    state_pub_->publish(state);
+    const auto sensors = interface_->get_sensors();
+    if (sensors) {
+      const auto & vals = sensors->values;
+      state.amperage = vals.amperage;
+      state.brake_pressure = vals.brake_pressure;
+      state.fault_brake = vals.fault_brake;
+      state.fault_error = vals.fault_error;
+      state.fault_fatal = vals.fault_fatal;
+      state.fault_info = vals.fault_info;
+      state.fault_steering = vals.fault_steering;
+      state.fault_throttle = vals.fault_throttle;
+      state.fault_warning = vals.fault_warning;
+      state.servo_angle_rad = vals.servo_angle_rad;
+      state.steering_angle_rad = vals.steering_angle_rad;
+      state.throttle_pos = vals.throttle_pos;
+      state.voltage = vals.voltage;
+      state.wheel_speed_fl = vals.wheel_speed_fl;
+      state.wheel_speed_fr = vals.wheel_speed_fr;
+      state.wheel_speed_rl = vals.wheel_speed_rl;
+      state.wheel_speed_rr = vals.wheel_speed_rr;
+      state.state = static_cast<uint8_t>(interface_->get_state());
+      state.stamp = get_clock()->now();
+      state_pub_->publish(state);
+    }
   }
 
   dump_logs();

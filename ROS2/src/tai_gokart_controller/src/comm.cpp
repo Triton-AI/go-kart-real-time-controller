@@ -41,7 +41,7 @@ bool SerialInterface::configure(const ConfigList & configs)
 {
   std::string serial_port = &(configs.at("serial_port").string[0]);
   uint32_t baud_rate = static_cast<uint32_t>(configs.at("baud_rate").integer);
-  auto fc = drivers::serial_driver::FlowControl::HARDWARE;
+  auto fc = drivers::serial_driver::FlowControl::NONE;
   auto pt = drivers::serial_driver::Parity::NONE;
   auto sb = drivers::serial_driver::StopBits::ONE;
   driver_->init_port(serial_port, drivers::serial_driver::SerialPortConfig(baud_rate, fc, pt, sb));

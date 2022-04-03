@@ -50,7 +50,7 @@ public:
     const rclcpp_lifecycle::State & previous_state);
 
 private:
-  rclcpp::Publisher<GkcState>::SharedPtr state_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<GkcState>::SharedPtr state_pub_;
   rclcpp::Subscription<GkcCommand>::SharedPtr cmd_sub_;
   rclcpp::TimerBase::SharedPtr state_pub_timer_;
   std::unique_ptr<GkcInterface> interface_;

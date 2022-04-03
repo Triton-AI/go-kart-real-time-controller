@@ -6,7 +6,7 @@
     # comm interface
     comm_type: 'serial' # serial, ethernet, can
     serial:
-      port: '/dev/ttyACM0'
+      port: '/dev/ttyS0'
       baud_rate: 115200
 
     # steering config (refers to average front wheel angle in radian)

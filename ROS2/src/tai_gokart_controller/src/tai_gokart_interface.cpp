@@ -35,7 +35,21 @@ GkcInterface::GkcInterface(const ConfigList & configs)
     throw std::runtime_error("Communication to the MCU cannot be established.");
   }
 
+  static constexpr uint32_t MAX_HANDSHAKE_WAIT_MS = 3000;
+  const std::chrono::milliseconds max_wait_ms(MAX_HANDSHAKE_WAIT_MS);
+  std::this_thread::sleep_for(max_wait_ms);
+  if (!handshake_good_) {
+    throw std::runtime_error("GKC handshake timeout.");
+  }
+
+  // Send firmware version inqury
+  send_firmware_version_request();
+
   // Start streaming heartbeats
+  auto log = LogPacket();
+  log.level = LogPacket::Severity::INFO;
+  log.what = "Start streaming heartbeats.";
+  logs_.emplace(log);
   heartbeat_thread =
     std::unique_ptr<std::thread>(new std::thread(&GkcInterface::stream_heartbeats, this));
 }
@@ -71,6 +85,7 @@ bool GkcInterface::initialize(const ConfigGkcPacket & config_packet, const uint3
   if (!comm_ || !comm_->is_open()) {
     return false;
   }
+  initialized_ = true;
   auto sent = static_cast<bool>(comm_->send(*factory_->Send(config_packet)));
   if (!sent) {
     return false;
@@ -80,7 +95,9 @@ bool GkcInterface::initialize(const ConfigGkcPacket & config_packet, const uint3
   std::this_thread::sleep_for(std::chrono::milliseconds(timeout_ms));
 
   // Check state code to determine if initialization was successful
-  return current_state_ == GkcLifecycle::Initializing;
+  initialized_ = current_state_ == GkcLifecycle::Initializing ||
+    current_state_ == GkcLifecycle::Inactive;
+  return initialized_;
 }
 
 bool GkcInterface::activate(const uint32_t & timeout_ms)
@@ -121,6 +138,16 @@ bool GkcInterface::emergency_stop(const uint32_t & timeout_ms)
   return try_change_state(GkcLifecycle::Emergency, timeout_ms);
 }
 
+bool GkcInterface::release_emergency_stop(const uint32_t & timeout_ms)
+{
+  (void) timeout_ms;
+  auto log = LogPacket();
+  log.level = LogPacket::Severity::ERROR;
+  log.what = "Releasing estop is not implemented. Please re-power-cycle.";
+  logs_.emplace(log);
+  return false;
+}
+
 bool GkcInterface::shutdown(const uint32_t & timeout_ms)
 {
   if (current_state_ != GkcLifecycle::Active && current_state_ != GkcLifecycle::Inactive) {
@@ -131,14 +158,14 @@ bool GkcInterface::shutdown(const uint32_t & timeout_ms)
     logs_.emplace(log);
     return false;
   }
-  bool succeeded = try_change_state(GkcLifecycle::Shutdown, timeout_ms);
+  bool succeeded = try_change_state(GkcLifecycle::Emergency, timeout_ms);
   succeeded &= send_shutdown();
   return succeeded;
 }
 
-const SensorGkcPacket & GkcInterface::get_sensors() const
+const SensorGkcPacket * GkcInterface::get_sensors() const
 {
-  return *sensors_;
+  return sensors_.get();
 }
 
 GkcLifecycle GkcInterface::get_state() const
@@ -179,7 +206,7 @@ bool GkcInterface::try_change_state(const GkcLifecycle & target_state, const uin
 
 void GkcInterface::stream_heartbeats()
 {
-  static constexpr uint32_t HEARTBEAT_INTERVAL_MS = 100;
+  static constexpr uint32_t HEARTBEAT_INTERVAL_MS = 1000;
   auto hb = HeartbeatGkcPacket();
   hb.rolling_counter = 0;
   while (comm_ && comm_->is_open()) {
@@ -232,18 +259,23 @@ void GkcInterface::packet_callback(const Handshake1GkcPacket & packet)
 void GkcInterface::packet_callback(const Handshake2GkcPacket & packet)
 {
   if (!handshake_number) {
+    handshake_good_ = false;
     throw std::runtime_error("Handshake #2 received, but no handshake #1 was initiated before.");
   } else if (*handshake_number + 1 != packet.seq_number) {
     auto log = LogPacket();
     log.level = LogPacket::Severity::WARNING;
-    log.what = "Handshake #2 received, but sequence number does not match. Retrying.";
+    log.what = "Handshake #2 received, but sequence number does not match.";
     logs_.emplace(log);
-    send_handshake();
+    handshake_good_ = false;
     return;
   }
 
-  // Handshake is good. Confirm firmware version.
-  send_firmware_version_request();
+  // Handshake is good.
+  auto log = LogPacket();
+  log.level = LogPacket::Severity::INFO;
+  log.what = "Received valid handshake from GKC.";
+  logs_.emplace(log);
+  handshake_good_ = true;
 }
 
 void GkcInterface::packet_callback(const GetFirmwareVersionGkcPacket & packet)
@@ -269,6 +301,11 @@ void GkcInterface::packet_callback(const FirmwareVersionGkcPacket & packet)
     log.level = LogPacket::Severity::WARNING;
     log.what = "GKC packet library version: patch number mismatch.";
     logs_.emplace(log);
+  } else {
+    auto log = LogPacket();
+    log.level = LogPacket::Severity::INFO;
+    log.what = "GKC packet library version matched.";
+    logs_.emplace(log);
   }
 }
 
@@ -280,7 +317,9 @@ void GkcInterface::packet_callback(const ResetMcuGkcPacket & packet)
 void GkcInterface::packet_callback(const HeartbeatGkcPacket & packet)
 {
   // TODO(haoru): handle heartbeat
-  current_state_ = static_cast<GkcLifecycle>(packet.state);
+  if (initialized_) {
+    current_state_ = static_cast<GkcLifecycle>(packet.state);
+  }
 }
 
 void GkcInterface::packet_callback(const ConfigGkcPacket & packet)
@@ -300,7 +339,9 @@ void GkcInterface::packet_callback(const ControlGkcPacket & packet)
 
 void GkcInterface::packet_callback(const SensorGkcPacket & packet)
 {
-  sensors_ = std::make_unique<SensorGkcPacket>(packet);
+  if (handshake_good_) {
+    sensors_ = std::make_unique<SensorGkcPacket>(packet);
+  }
 }
 
 void GkcInterface::packet_callback(const Shutdown1GkcPacket & packet)
