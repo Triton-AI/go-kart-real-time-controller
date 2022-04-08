@@ -20,7 +20,8 @@ namespace tritonai
 namespace gkc
 {
 GkcInterface::GkcInterface(const ConfigList & configs)
-: factory_(std::make_unique<GkcPacketFactory>(this, GkcPacketUtils::debug_cout))
+: factory_(std::make_unique<GkcPacketFactory>(this, GkcPacketUtils::debug_cout)),
+  sensors_(std::make_unique<SensorGkcPacket>())
 {
   // Find and initialize a comm interface based on config
   std::string comm_name = static_cast<std::string>(configs.at("comm_type"));
@@ -340,7 +341,7 @@ void GkcInterface::packet_callback(const ControlGkcPacket & packet)
 void GkcInterface::packet_callback(const SensorGkcPacket & packet)
 {
   if (handshake_good_) {
-    sensors_ = std::make_unique<SensorGkcPacket>(packet);
+    sensors_->values = packet.values;
   }
 }
 
