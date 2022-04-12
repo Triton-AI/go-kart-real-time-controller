@@ -6,7 +6,7 @@
     # comm interface
     comm_type: 'serial' # serial, ethernet, can
     serial:
-      port: '/dev/ttyDUMMY'
+      port: '/dev/ttyUSB0'
       baud_rate: 115200
 
     # steering config (refers to average front wheel angle in radian)
@@ -30,10 +30,10 @@
     sensor_timeout_ms: 100  # timeout between two sensor pollings
 
     # joystick testing
-    enable_js_sub: false
+    enable_js_sub: true
 
     js_throttle_axis: 1
-    js_brake_axis: 2
+    js_brake_axis: 1
     js_steering_axis: 3
 
     js_throttle_offset: 0.0
@@ -41,6 +41,6 @@
     js_steering_offset: 0.0
 
     js_throttle_scale: 1.0
-    js_brake_scale: 1.0
+    js_brake_scale: -1.0
     js_steering_scale: 1.0
 
