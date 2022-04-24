@@ -4,11 +4,24 @@
 
 ## Navigation
 
-This repository is organized as follows:
+`src` folder contains the ROS2 driver, ROS2 messages, and a C++ communication library.
 
-- `ROS2` contains the gokart packet library and ROS2 driver
-- `PCB` contains Altium PCB design files
-- `MCU` contains microcontroller codes ([depricated, moved to a separate repository](https://github.com/Triton-AI/go-kart-real-time-controller-mbed))
+Hardware design (PCB) has been moved to a separate [repository](https://github.com/Triton-AI/go-kart-real-time-controller-mbed)).
+
+RTC code is located in its own [repository](https://github.com/Triton-AI/go-kart-real-time-controller-mbed).
+
+## Install
+
+1. Install ROS2 Galactic
+2. Clone this repository
+
+## Build
+
+```{bash}
+cd go-kart-real-time-controller
+source /opt/ros/galactic/setup.bash
+colcon build
+```
 
 ## Documentations
 
